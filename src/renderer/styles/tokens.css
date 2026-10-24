@@ -1,0 +1,144 @@
+/**
+ * Dyslexia-Accessible Design Tokens & Variables
+ */
+:root {
+  /* Typography */
+  --font-family-dyslexic: 'Lexend', 'OpenDyslexic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-family-display: 'Lexend', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-size-base: 22px;
+  --font-size-lg: 28px;
+  --font-size-xl: 36px;
+  --font-size-sm: 18px;
+  --font-size-xs: 15px;
+  --line-height-comfortable: 1.9;
+  --line-height-standard: 1.7;
+  --letter-spacing-wide: 0.16em;
+  --letter-spacing-standard: 0.12em;
+  --word-spacing-comfortable: 0.25em;
+
+  /* Color Themes (Muted, anti-glare, scotopic sensitivity friendly) */
+  /* Default: Warm Parchment */
+  --color-bg-primary: #FDFBF7;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-card: #F7F3EB;
+  --color-text-primary: #2D3748;
+  --color-text-secondary: #4A5568;
+  --color-border: #E2D9CC;
+  --color-accent: #3B82F6;
+  --color-accent-hover: #2563EB;
+  --color-error: #DC2626;
+  --color-error-bg: #FEF2F2;
+  --color-success: #16A34A;
+  --color-success-bg: #F0FDF4;
+
+  /* Soft Mint Theme */
+  --theme-mint-bg: #F4FAF6;
+  --theme-mint-surface: #FFFFFF;
+  --theme-mint-card: #E8F5EE;
+  --theme-mint-text: #1F3A2B;
+  --theme-mint-border: #C8E5D5;
+
+  /* Peach Glow Theme */
+  --theme-peach-bg: #FFF8F3;
+  --theme-peach-surface: #FFFFFF;
+  --theme-peach-card: #FDEEE4;
+  --theme-peach-text: #4A2818;
+  --theme-peach-border: #F5D3C1;
+
+  /* Soft Lavender Theme */
+  --theme-lavender-bg: #F9F7FD;
+  --theme-lavender-surface: #FFFFFF;
+  --theme-lavender-card: #F0ECFA;
+  --theme-lavender-text: #32254B;
+  --theme-lavender-border: #DDD5F3;
+
+  /* High Contrast Dark Mode */
+  --theme-dark-bg: #1A202C;
+  --theme-dark-surface: #2D3748;
+  --theme-dark-card: #374151;
+  --theme-dark-text: #F7FAFC;
+  --theme-dark-border: #4B5563;
+
+  /* Touch & Hit Target Sizing */
+  --target-size-min: 64px;
+  --target-radius: 16px;
+  --target-border-width: 3px;
+
+  /* Focus & Accessibility */
+  --focus-ring-color: #2563EB;
+  --focus-ring-width: 4px;
+  --focus-ring-offset: 4px;
+
+  /* Spacing */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 36px;
+  --space-xl: 48px;
+  --space-2xl: 64px;
+
+  /* Animation */
+  --transition-gentle: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dynamic Themes applied via data-theme attribute */
+body[data-theme="warm-parchment"] {
+  --color-bg-primary: #FDFBF7;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-card: #F7F3EB;
+  --color-text-primary: #2D3748;
+  --color-border: #E2D9CC;
+}
+
+body[data-theme="soft-mint"] {
+  --color-bg-primary: var(--theme-mint-bg);
+  --color-bg-surface: var(--theme-mint-surface);
+  --color-bg-card: var(--theme-mint-card);
+  --color-text-primary: var(--theme-mint-text);
+  --color-border: var(--theme-mint-border);
+}
+
+body[data-theme="peach-glow"] {
+  --color-bg-primary: var(--theme-peach-bg);
+  --color-bg-surface: var(--theme-peach-surface);
+  --color-bg-card: var(--theme-peach-card);
+  --color-text-primary: var(--theme-peach-text);
+  --color-border: var(--theme-peach-border);
+}
+
+body[data-theme="soft-lavender"] {
+  --color-bg-primary: var(--theme-lavender-bg);
+  --color-bg-surface: var(--theme-lavender-surface);
+  --color-bg-card: var(--theme-lavender-card);
+  --color-text-primary: var(--theme-lavender-text);
+  --color-border: var(--theme-lavender-border);
+}
+
+body[data-theme="high-contrast"] {
+  --color-bg-primary: var(--theme-dark-bg);
+  --color-bg-surface: var(--theme-dark-surface);
+  --color-bg-card: var(--theme-dark-card);
+  --color-text-primary: var(--theme-dark-text);
+  --color-border: var(--theme-dark-border);
+}
+
+/* Base Body Styles */
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-family-dyslexic);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-comfortable);
+  letter-spacing: var(--letter-spacing-standard);
+  word-spacing: var(--word-spacing-comfortable);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}

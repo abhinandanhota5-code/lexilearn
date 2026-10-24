@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en" data-tint="paper" data-contrast="standard">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LumiLearn — Design system &amp; prototype</title>
+<meta name="description" content="LumiLearn: a calm, accessible reading companion for children with dyslexia. Design system and clickable prototype.">
+<link rel="stylesheet" href="lumilearn.css">
+<style>
+  /* Review chrome only — every value still comes from a token. */
+  .topbar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: var(--sp-4);
+    align-items: center; justify-content: space-between;
+    padding: var(--sp-3) clamp(var(--sp-4), 1rem + 3vw, var(--sp-8));
+    background: color-mix(in srgb, var(--lum-bg) 86%, transparent);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--lum-border); }
+  .control { display: grid; gap: 4px; }
+  .control__label { font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--lum-ink-faint); }
+  .seg { display: inline-flex; gap: 2px; padding: 3px; border: 2px solid var(--lum-border); border-radius: var(--r-pill); background: var(--lum-card); max-width: 100%; overflow-x: auto; }
+  .seg button { flex: none; border: 0; background: transparent; border-radius: var(--r-pill); padding: 7px 13px; font-weight: 600; font-size: var(--fs-sm); color: var(--lum-ink-soft); cursor: pointer; white-space: nowrap; }
+  .seg button[aria-pressed="true"] { background: var(--lum-surface); color: var(--lum-accent-strong); box-shadow: var(--shadow-sm); }
+  .lumi-host, .ic-host { display: inline-flex; line-height: 0; }
+  a.navlink { text-decoration: none; }
+  .view[hidden] { display: none; }
+  .demo-frame { margin-bottom: var(--sp-8); }
+  .view .section { scroll-margin-top: 96px; }
+  .swatch__chip { display: grid; place-items: end start; padding: var(--sp-2); }
+  .swatch__chip span { font-size: 11px; font-weight: 700; color: var(--lum-on-accent); }
+  .prose, .prompt { font-family: var(--font-read); }
+  html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after {
+    animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important;
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ── Rail ─────────────────────────────────────────────── -->
+  <aside class="rail">
+    <div class="rail__brand">
+      <span class="rail__mark" data-lumi="idle" data-size="40" aria-hidden="true"></span>
+      <div>
+        <div class="rail__name">LumiLearn</div>
+        <div class="rail__tag">Reading, calmly</div>
+      </div>
+    </div>
+
+    <nav class="rail__group" aria-label="Foundations">
+      <span class="rail__label">Foundations</span>
+      <button class="navlink" data-view="foundations" data-target="brand"><span data-ic="sparkle"></span>Brand &amp; Lumi</button>
+      <button class="navlink" data-view="foundations" data-target="color"><span data-ic="eye"></span>Colour</button>
+      <button class="navlink" data-view="foundations" data-target="type"><span data-ic="book"></span>Typography</button>
+      <button class="navlink" data-view="foundations" data-target="space"><span data-ic="target"></span>Space &amp; motion</button>
+      <button class="navlink" data-view="foundations" data-target="icons"><span data-ic="grid"></span>Icons</button>
+      <button class="navlink" data-view="foundations" data-target="components"><span data-ic="puzzle"></span>Components</button>
+      <button class="navlink" data-view="foundations" data-target="lumi"><span data-ic="heart"></span>Lumi states</button>
+    </nav>
+
+    <nav class="rail__group" aria-label="Screens">
+      <span class="rail__label">Child</span>
+      <button class="navlink" data-view="screens" data-target="scr-onboard"><span data-ic="sparkle"></span>1 · Onboarding</button>
+      <button class="navlink" data-view="screens" data-target="scr-screening"><span data-ic="target"></span>2 · Screening</button>
+      <button class="navlink" data-view="screens" data-target="scr-results"><span data-ic="chart"></span>3 · Results &amp; profile</button>
+      <button class="navlink" data-view="screens" data-target="scr-day"><span data-ic="home"></span>4 · My Day</button>
+      <button class="navlink" data-view="screens" data-target="scr-mission"><span data-ic="flag"></span>5 · Learning activity</button>
+      <button class="navlink" data-view="screens" data-target="scr-help"><span data-ic="message"></span>6 · I don't understand</button>
+      <button class="navlink" data-view="screens" data-target="scr-showme"><span data-ic="lightbulb"></span>7 · Visual explanation</button>
+      <button class="navlink" data-view="screens" data-target="scr-companion"><span data-ic="heart"></span>8 · Lumi companion</button>
+    </nav>
+
+    <nav class="rail__group" aria-label="Grown-ups">
+      <span class="rail__label">Grown-ups</span>
+      <button class="navlink" data-view="screens" data-target="scr-setup"><span data-ic="user"></span>9 · Parent onboarding</button>
+      <button class="navlink" data-view="screens" data-target="scr-progress"><span data-ic="chart"></span>10 · Progress</button>
+      <button class="navlink" data-view="screens" data-target="scr-profile"><span data-ic="book"></span>11 · Reading preferences</button>
+      <button class="navlink" data-view="screens" data-target="scr-settings"><span data-ic="settings"></span>12 · Settings &amp; access</button>
+    </nav>
+
+    <nav class="rail__group" aria-label="Companion redesign">
+      <span class="rail__label">Companion redesign</span>
+      <a class="navlink" href="lumi-concepts.html"><span data-ic="star"></span>New celestial Lumi concepts</a>
+    </nav>
+
+    <div class="rail__foot">Prototype review · v1</div>
+  </aside>
+
+  <!-- ── Stage ────────────────────────────────────────────── -->
+  <main class="stage" id="main">
+
+    <div class="topbar">
+      <div class="row" style="font-weight:600">
+        <span data-ic="sparkle"></span>
+        <span>LumiLearn design surface</span>
+      </div>
+
+      <div class="control">
+        <span class="control__label" id="tint-label">Reading tint</span>
+        <div class="seg" role="group" aria-labelledby="tint-label">
+          <button data-set-tint="paper" aria-pressed="true">Paper</button>
+          <button data-set-tint="mint" aria-pressed="false">Mint</button>
+          <button data-set-tint="lavender" aria-pressed="false">Lavender</button>
+          <button data-set-tint="peach" aria-pressed="false">Peach</button>
+        </div>
+      </div>
+
+      <div class="control">
+        <span class="control__label" id="contrast-label">Contrast</span>
+        <div class="seg" role="group" aria-labelledby="contrast-label">
+          <button data-set-contrast="standard" aria-pressed="true">Standard</button>
+          <button data-set-contrast="high" aria-pressed="false">High</button>
+          <button data-set-contrast="dark" aria-pressed="false">Dark</button>
+        </div>
+      </div>
+
+      <div class="control">
+        <label class="control__label" for="read-font">Reading font</label>
+        <select class="input" id="read-font" style="min-height:40px;padding:6px 12px;border-width:2px">
+          <option value="'Lexend','Atkinson Hyperlegible',-apple-system,sans-serif">Lexend (default)</option>
+          <option value="'Atkinson Hyperlegible',-apple-system,sans-serif">Atkinson Hyperlegible</option>
+          <option value="Georgia,'Times New Roman',serif">Readable serif</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ══════════════════ FOUNDATIONS ══════════════════ -->
+    <div class="view" data-view-panel="foundations">
+      <p class="eyebrow">Foundations</p>
+
+      <!-- Brand -->
+      <section class="section" id="brand">
+        <p class="eyebrow">01 · Brand &amp; companion</p>
+        <div class="grid grid--2">
+          <div class="od-stack" style="--od-gap:16px">
+            <h1 class="h1">Calm clarity with a warm center.</h1>
+            <p class="lead">LumiLearn is a reading companion for children with dyslexia — and a clear control panel for the grown-ups who support them. One visual language, two voices: playful for the child, composed for the parent.</p>
+            <div class="row">
+              <span class="chip chip--accent"><span data-ic="sparkle"></span>Lumi Teal</span>
+              <span class="chip"><span data-ic="book"></span>Lexend first</span>
+              <span class="chip chip--warm"><span data-ic="heart"></span>Warm accent</span>
+            </div>
+            <div class="row mt-4">
+              <button class="btn btn--lg" data-goto="screens" data-target="scr-onboard">Start reading<span data-ic="arrow-right"></span></button>
+              <button class="btn btn--secondary btn--lg" data-goto="screens" data-target="scr-day">See the screens</button>
+            </div>
+          </div>
+          <div class="card card--soft center" style="display:grid;place-items:center;gap:16px;padding:var(--sp-6)">
+            <span data-lumi="idle" data-size="180"></span>
+            <div class="bubble">Hi, I'm Lumi. We'll take reading one calm step at a time.</div>
+          </div>
+        </div>
+      </section>
+
+      <hr class="rule">
+
+      <!-- Colour -->
+      <section class="section" id="color">
+        <div class="section__head">
+          <div>
+            <p class="eyebrow">02 · Colour</p>
+            <h2 class="h2">Teal to focus, amber to celebrate</h2>
+          </div>
+          <span class="pill-note">Both axes audited at 4.5:1 on body text</span>
+        </div>
+        <p class="lead">The reading tint and the contrast mode are two independent axes, so a child can pick a comfortable surface without losing accessibility. Tint shifts surfaces only — never the accent.</p>
+
+        <h3 class="h3 mt-5">Core palette</h3>
+        <div class="swatches mb-5">
+          <div class="swatch"><div class="swatch__chip" style="background:var(--lum-accent)"><span>accent</span></div><div class="swatch__meta"><div class="swatch__name">Lumi Teal</div><div class="swatch__hex">#0E6E63</div></div></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--lum-accent-strong)"><span>accent-strong</span></div><div class="swatch__meta"><div class="swatch__name">Teal deep</div><div class="swatch__hex">#0A564D</div></div></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--lum-warm)"><span>warm</span></div><div class="swatch__meta"><div class="swatch__name">Warm amber</div><div class="swatch__hex">#B45309</div></div></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--lum-success);color:#fff"><span>success</span></div><div class="swatch__meta"><div class="swatch__name">Leaf</div><div class="swatch__hex">#15803D</div></div></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--lum-danger);color:#fff"><span>danger</span></div><div class="swatch__meta"><div class="swatch__name">Rose</div><div class="swatch__hex">#B91C1C</div></div></div>
+          <div class="swatch"><div class="swatch__chip" style="background:var(--lum-ink)"><span>ink</span></div><div class="swatch__meta"><div class="swatch__name">Ink</div><div class="swatch__hex">#1F2933</div></div></div>
+        </div>
+
+        <h3 class="h3">Reading tints</h3>
+        <p class="muted mb-4">Change the surface with the tint control above. Each tint is a surface tone only; contrast is chosen separately.</p>
+        <div class="swatches">
+          <div class="swatch"><div class="swatch__chip" style="background:#FBFBFA;border-bottom:1px solid var(--lum-border)"></div><div class="swatch__meta"><div class="swatch__name">Paper</div><div class="swatch__hex">#FBFBFA · default</div></div></div>
+          <div class="swatch"><div class="swatch__chip" style="background:#F3FAF7;border-bottom:1px solid var(--lum-border)"></div><div class="swatch__meta"><div class="swatch__name">Mint</div><div class="swatch__hex">#F3FAF7</div></div></div>
+          <div class="swatch"><div class="swatch__chip" style="background:#F7F6FB;border-bottom:1px solid var(--lum-border)"></div><div class="swatch__meta"><div class="swatch__name">Lavender</div><div class="swatch__hex">#F7F6FB</div></div></div>
+          <div class="swatch"><div class="swatch__chip" style="background:#FDF7F2;border-bottom:1px solid var(--lum-border)"></div><div class="swatch__meta"><div class="swatch__name">Peach</div><div class="swatch__hex">#FDF7F2</div></div></div>
+        </div>
+      </section>
+
+      <hr class="rule">
+
+      <!-- Type -->
+      <section class="section" id="type">
+        <div class="section__head">
+          <div>
+            <p class="eyebrow">03 · Typography</p>
+            <h2 class="h2">Lexend, generously spaced</h2>
+          </div>
+        </div>
+        <p class="lead">One family for the whole product with a resolving system fallback. Reading text uses a roomier line height and slightly open tracking; headings are sentence case and never shouty.</p>
+        <div class="specimen">
+          <div class="specimen__row"><span class="specimen__tag">Hero · 2–3rem</span><p class="h1" style="margin:0">Learning that feels safe</p></div>
+          <div class="specimen__row"><span class="specimen__tag">H2 · 2.25rem</span><h2 class="h2" style="margin:0">Your reading day</h2></div>
+          <div class="specimen__row"><span class="specimen__tag">H3 · 1.75rem</span><h3 class="h3" style="margin:0">Ending sounds</h3></div>
+          <div class="specimen__row"><span class="specimen__tag">Body · 1.125rem</span><p style="margin:0">Lumi sits beside you and reads at your pace, never rushing.</p></div>
+          <div class="specimen__row"><span class="specimen__tag">Prose · 1.75 lh</span>
+            <p class="prose" style="margin:0">The <strong>night</strong> was bright with the light of the <strong>moon</strong>. Lumi read slowly, giving each sound room to land. When the words felt slippery, Lumi said, “Let's look at the ending together.”</p>
+          </div>
+          <div class="specimen__row"><span class="specimen__tag">Small · .8125rem</span><p class="muted" style="margin:0;font-size:var(--fs-xs)">Progress is saved after every short session.</p></div>
+        </div>
+      </section>
+
+      <hr class="rule">
+
+      <!-- Space & motion -->
+      <section class="section" id="space">
+        <p class="eyebrow">04 · Space, radius &amp; motion</p>
+        <h2 class="h2">A 4 / 8 rhythm</h2>
+        <h3 class="h3 mt-5">Spacing scale</h3>
+        <div class="space-demo mb-5">
+          <div class="space-box" style="width:var(--sp-1);height:28px">4</div>
+          <div class="space-box" style="width:var(--sp-2);height:28px">8</div>
+          <div class="space-box" style="width:var(--sp-3);height:28px">12</div>
+          <div class="space-box" style="width:var(--sp-4);height:28px">16</div>
+          <div class="space-box" style="width:var(--sp-5);height:28px">24</div>
+          <div class="space-box" style="width:var(--sp-6);height:28px">32</div>
+          <div class="space-box" style="width:var(--sp-7);height:28px">48</div>
+          <div class="space-box" style="width:var(--sp-8);height:28px">64</div>
+        </div>
+        <div class="grid grid--3">
+          <div class="card"><h4 class="h4">Radius</h4><div class="row"><span class="chip" style="border-radius:8px">8</span><span class="chip" style="border-radius:12px">12</span><span class="chip" style="border-radius:16px">16</span><span class="chip" style="border-radius:22px">22</span><span class="chip" style="border-radius:999px">pill</span></div></div>
+          <div class="card"><h4 class="h4">Elevation</h4><div class="row"><span class="card" style="padding:12px 18px;box-shadow:var(--shadow-sm)">sm</span><span class="card" style="padding:12px 18px;box-shadow:var(--shadow-md)">md</span><span class="card" style="padding:12px 18px;box-shadow:var(--shadow-lg)">lg</span></div></div>
+          <div class="card"><h4 class="h4">Motion</h4><p class="muted" style="margin:0">160ms · 240ms · 360ms, all ease-out. Only idle breathing loops; every other state rests.</p></div>
+        </div>
+      </section>
+
+      <hr class="rule">
+
+      <!-- Icons -->
+      <section class="section" id="icons">
+        <p class="eyebrow">05 · Icons</p>
+        <h2 class="h2">One authored line family</h2>
+        <p class="lead">A single 1.8px rounded stroke set. No emoji ever stands in for a control.</p>
+        <div class="icon-grid" id="icon-grid"></div>
+      </section>
+
+      <hr class="rule">
+
+      <!-- Components -->
+      <section class="section" id="components">
+        <p class="eyebrow">06 · Components</p>
+        <h2 class="h2">One set, two voices</h2>
+        <p class="lead">The same controls serve the child and the parent; only scale and tone change.</p>
+
+        <div class="grid grid--2">
+          <div class="card">
+            <h4 class="h4">Buttons</h4>
+            <div class="row">
+              <button class="btn">Primary</button>
+              <button class="btn btn--secondary">Secondary</button>
+              <button class="btn btn--ghost">Ghost</button>
+              <button class="btn btn--danger">Danger</button>
+              <button class="btn btn--warm">Warm</button>
+              <button class="btn" disabled>Disabled</button>
+            </div>
+            <div class="row mt-4">
+              <button class="iconbtn" aria-label="Play"><span data-ic="play"></span></button>
+              <button class="iconbtn" aria-label="Pause"><span data-ic="pause"></span></button>
+              <button class="iconbtn" aria-label="Replay"><span data-ic="replay"></span></button>
+              <button class="iconbtn" aria-label="Listen"><span data-ic="mic"></span></button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4 class="h4">Chips &amp; status</h4>
+            <div class="row">
+              <span class="chip">Neutral</span>
+              <span class="chip chip--accent"><span data-ic="sparkle"></span>In progress</span>
+              <span class="chip chip--success"><span data-ic="check"></span>Mastered</span>
+              <span class="chip chip--warm"><span data-ic="heart"></span>Practising</span>
+            </div>
+            <div class="stack mt-4">
+              <div class="banner banner--info"><span data-ic="lightbulb"></span><div><strong>Gentle pace.</strong> Sessions stay short so attention holds.</div></div>
+              <div class="banner banner--success"><span data-ic="check"></span><div><strong>Nice work.</strong> Three ending-sound words read without help.</div></div>
+              <div class="banner banner--attention"><span data-ic="clock"></span><div><strong>Time for a break?</strong> You've been reading for 12 minutes.</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4 class="h4">Fields</h4>
+            <div class="stack">
+              <div class="field">
+                <label class="label" for="c-name">Child's first name</label>
+                <input class="input" id="c-name" placeholder="e.g. Ada" value="Ada">
+                <span class="hint">Only used to greet them — never shared.</span>
+              </div>
+              <div class="field field--error">
+                <label class="label" for="c-year">School year</label>
+                <input class="input" id="c-year" value="" placeholder="Choose a year">
+                <span class="err"><span data-ic="alert"></span>Please pick a year to continue.</span>
+              </div>
+              <label class="check"><input type="checkbox" checked><span><strong>Read questions aloud by default</strong><br><span class="hint">Lumi speaks every prompt unless the child turns it off.</span></span></label>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4 class="h4">Progress</h4>
+            <div class="stack">
+              <div>
+                <div class="row row--between"><span class="muted">Today's session</span><span class="chip chip--accent">3 of 5</span></div>
+                <div class="progress mt-4" style="margin-top:8px"><div class="progress__fill" style="--v:60%"></div></div>
+              </div>
+              <div>
+                <span class="muted">This week</span>
+                <div class="dots" style="margin-top:8px">
+                  <span class="dot is-done"></span><span class="dot is-done"></span><span class="dot is-done"></span>
+                  <span class="dot is-now"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                </div>
+              </div>
+              <div class="grid grid--3" style="--od-gap:8px">
+                <div class="stat"><div class="stat__value">12</div><div class="stat__label">min today</div></div>
+                <div class="stat"><div class="stat__value">4</div><div class="stat__label">days in a row</div></div>
+                <div class="stat"><div class="stat__value">86%</div><div class="stat__label">accuracy</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-5">
+          <button class="btn btn--secondary" data-open-dialog><span data-ic="alert"></span>Show a dialog</button>
+          <span class="muted">Replaces native <code>confirm()</code> / <code>alert()</code> with a focus-managed, on-brand dialog.</span>
+        </div>
+      </section>
+
+      <hr class="rule">
+
+      <!-- Lumi -->
+      <section class="section" id="lumi">
+        <div class="section__head">
+          <div>
+            <p class="eyebrow">07 · Companion</p>
+            <h2 class="h2">Meet Lumi</h2>
+          </div>
+          <span class="pill-note">Reduced-motion safe</span>
+        </div>
+        <p class="lead">Lumi is a celestial companion — a soft, rounded star with a warm spark at its crown. Six states, one calm personality. Only <em>idle</em> loops (a slow float and glow); every other state plays briefly and rests.</p>
+
+        <div class="card card--soft" style="display:flex;flex-wrap:wrap;gap:var(--sp-5);align-items:center;justify-content:center;text-align:center;padding:var(--sp-6)">
+          <span class="lumi-host" id="lumi-preview" data-lumi="idle" data-size="160"></span>
+          <div class="stack" style="max-width:420px;text-align:left">
+            <p class="muted" id="lumi-caption" style="min-height:3em;margin:0">Resting light: a slow float and a soft glow.</p>
+            <div class="row" role="group" aria-label="Preview a Lumi state">
+              <button class="btn btn--secondary btn--sm" data-preview-state="idle" aria-pressed="true">Idle</button>
+              <button class="btn btn--secondary btn--sm" data-preview-state="listening" aria-pressed="false">Listening</button>
+              <button class="btn btn--secondary btn--sm" data-preview-state="thinking" aria-pressed="false">Thinking</button>
+              <button class="btn btn--secondary btn--sm" data-preview-state="helping" aria-pressed="false">Helping</button>
+              <button class="btn btn--secondary btn--sm" data-preview-state="encouraging" aria-pressed="false">Encouraging</button>
+              <button class="btn btn--secondary btn--sm" data-preview-state="celebrating" aria-pressed="false">Celebrating</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="lumi-grid mt-5">
+          <div class="lumi-cell"><span data-lumi="idle" data-size="120"></span><div class="lumi-cell__name">Idle</div><p class="lumi-cell__note">Waits quietly beside the child. Gentle breathing only.</p></div>
+          <div class="lumi-cell"><span data-lumi="listening" data-size="120"></span><div class="lumi-cell__name">Listening</div><p class="lumi-cell__note">Leans in while a question or word is read aloud.</p></div>
+          <div class="lumi-cell"><span data-lumi="thinking" data-size="120"></span><div class="lumi-cell__name">Thinking</div><p class="lumi-cell__note">Ponders briefly while the child works, then settles.</p></div>
+          <div class="lumi-cell"><span data-lumi="helping" data-size="120"></span><div class="lumi-cell__name">Helping</div><p class="lumi-cell__note">Steps in with a hint or a "Show me" explanation.</p></div>
+          <div class="lumi-cell"><span data-lumi="encouraging" data-size="120"></span><div class="lumi-cell__name">Encouraging</div><p class="lumi-cell__note">Praises effort after any try — not only correct answers.</p></div>
+          <div class="lumi-cell"><span data-lumi="celebrating" data-size="120"></span><div class="lumi-cell__name">Celebrating</div><p class="lumi-cell__note">A brief burst for milestones, then back to idle.</p></div>
+        </div>
+
+        <div class="banner banner--info mt-5" role="note">
+          <span data-ic="sparkle"></span>
+          <div class="row row--between" style="flex:1;flex-wrap:wrap;gap:var(--sp-3);align-items:center">
+            <div><strong>Exploring a new Lumi?</strong> Three celestial crescent/star concepts are ready to compare — each shown across all six states, at icon scale, and in dark mode. This Lumi stays exactly as it is until you choose.</div>
+            <a class="btn btn--secondary" href="lumi-concepts.html">Open Lumi concepts<span data-ic="arrow-right"></span></a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ══════════════════ SCREENS ══════════════════ -->
+    <div class="view" data-view-panel="screens" hidden>
+      <p class="eyebrow">Screens</p>
+      <h1 class="h1">Twelve screens, one language</h1>
+      <p class="lead">Child screens lead with the companion and one clear action. Grown-up screens lead with evidence. Navigation is driven by "today", not by internal metaphors. Every screen shows its intended path.</p>
+
+      <!-- 1 · Child onboarding -->
+      <section class="section demo-frame" id="scr-onboard">
+        <p class="eyebrow">1 · Child onboarding &nbsp;·&nbsp; path: welcome → set up → ready</p>
+        <div class="screen">
+          <div class="appbar">
+            <span class="appbar__brand"><span class="appbar__mark" data-lumi="idle" data-size="30" aria-hidden="true"></span>LumiLearn</span>
+          </div>
+          <div class="canvas">
+            <div class="child-hero" style="margin-bottom:var(--sp-5)">
+              <span data-lumi="listening" data-size="130" aria-hidden="true"></span>
+              <div class="bubble">Hi! I'm Lumi. Let's set up your reading space together — just three quick steps.</div>
+            </div>
+
+            <div id="onboard" class="stack" style="--od-gap:24px">
+              <div class="row row--between">
+                <span class="pill-note" id="onboard-step-label">Step 1 of 3</span>
+                <div class="dots" id="onboard-dots" aria-hidden="true">
+                  <span class="dot is-now"></span><span class="dot"></span><span class="dot"></span>
+                </div>
+              </div>
+
+              <div data-ob-step="1">
+                <h3 class="h3">What should I call you?</h3>
+                <div class="field" style="max-width:420px">
+                  <label class="label" for="ob-name">Your name</label>
+                  <input class="input" id="ob-name" placeholder="Type your name" value="Ada" autocomplete="off">
+                </div>
+              </div>
+
+              <div data-ob-step="2" hidden>
+                <h3 class="h3">Pick a buddy to read with</h3>
+                <p class="muted">You can change this whenever you like.</p>
+                <div class="buddies" id="ob-buddies" role="group" aria-label="Choose a buddy">
+                  <button class="buddy" aria-pressed="true"><span data-ic="star"></span><span>Star</span></button>
+                  <button class="buddy" aria-pressed="false"><span data-ic="heart"></span><span>Pip</span></button>
+                  <button class="buddy" aria-pressed="false"><span data-ic="sparkle"></span><span>Zig</span></button>
+                  <button class="buddy" aria-pressed="false"><span data-ic="headphones"></span><span>Echo</span></button>
+                </div>
+              </div>
+
+              <div data-ob-step="3" hidden>
+                <h3 class="h3">How should your pages feel?</h3>
+                <p class="muted">Pick a page colour and how strong the contrast is. This only changes the look — it never changes your reading.</p>
+                <div class="stack" style="--od-gap:12px">
+                  <div>
+                    <span class="label">Page colour</span>
+                    <div class="seg mt-4" role="group" aria-label="Page colour">
+                      <button data-set-tint="paper" aria-pressed="true">Paper</button>
+                      <button data-set-tint="mint" aria-pressed="false">Mint</button>
+                      <button data-set-tint="lavender" aria-pressed="false">Lavender</button>
+                      <button data-set-tint="peach" aria-pressed="false">Peach</button>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="label">Contrast</span>
+                    <div class="seg mt-4" role="group" aria-label="Contrast">
+                      <button data-set-contrast="standard" aria-pressed="true">Standard</button>
+                      <button data-set-contrast="high" aria-pressed="false">High</button>
+                      <button data-set-contrast="dark" aria-pressed="false">Dark</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row row--between">
+                <button class="btn btn--ghost" id="onboard-back" disabled>Back</button>
+                <button class="btn btn--lg" id="onboard-next"><span id="onboard-next-label">Next</span><span data-ic="arrow-right"></span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 · Initial screening -->
+      <section class="section demo-frame" id="scr-screening">
+        <p class="eyebrow">2 · Initial screening &nbsp;·&nbsp; path: calm check-in → results</p>
+        <div class="screen">
+          <div class="appbar">
+            <button class="iconbtn" aria-label="Back"><span data-ic="arrow-left"></span></button>
+            <span class="appbar__brand">Getting to know your reading</span>
+            <div class="appbar__nav" aria-hidden="true">
+              <span class="dot is-now"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+          </div>
+          <div class="canvas">
+            <div class="activity-head">
+              <span class="norush"><span data-ic="clock"></span>No timer. No wrong answers. Just show me how you listen.</span>
+            </div>
+
+            <p class="prompt">Which picture starts with the same sound as <strong>"sun"</strong>?</p>
+
+            <div class="tiles" id="screening-tiles" role="group" aria-label="Choose a picture">
+              <button class="tile"><span data-ic="star" aria-hidden="true"></span>star</button>
+              <button class="tile"><span data-ic="moon" aria-hidden="true"></span>moon</button>
+              <button class="tile"><span data-ic="tree" aria-hidden="true"></span>tree</button>
+              <button class="tile"><span data-ic="fish" aria-hidden="true"></span>fish</button>
+            </div>
+
+            <p class="feedback" id="sc-feedback" role="status" aria-live="polite"></p>
+
+            <div class="row mt-4">
+              <button class="btn btn--secondary"><span data-ic="speaker"></span>Read it to me</button>
+              <button class="btn btn--ghost">I don't know yet</button>
+              <button class="btn btn--lg" id="screening-next" hidden>Next<span data-ic="arrow-right"></span></button>
+            </div>
+
+            <div class="dock" id="dock-screening">
+              <div class="dock__inner">
+                <div class="bubble dock__bubble">Take your time. There is no wrong answer here.</div>
+                <span class="dock__mini" data-lumi="idle" data-size="72" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · Screening results / learner profile -->
+      <section class="section demo-frame" id="scr-results">
+        <p class="eyebrow">3 · Screening results &amp; learner profile &nbsp;·&nbsp; path: results → plan</p>
+        <div class="screen">
+          <div class="appbar">
+            <span class="appbar__brand"><span data-ic="chart" aria-hidden="true"></span>Ada's starting picture</span>
+            <div class="appbar__nav">
+              <button class="appnav" aria-current="page">Results</button>
+              <button class="appnav">Plan</button>
+            </div>
+          </div>
+          <div class="canvas">
+            <div class="banner banner--info mb-5"><span data-ic="shield"></span><div><strong>This is a starting point, not a label.</strong> It shows where to begin, and it will keep changing as Ada reads.</div></div>
+
+            <div class="grid grid--2">
+              <div class="card">
+                <h3 class="h3">What Ada is strong at</h3>
+                <div class="stack" style="--od-gap:12px">
+                  <div class="task-row"><span data-ic="speaker" aria-hidden="true"></span><div class="od-fill"><strong>Listening &amp; rhyme</strong><div class="muted" style="font-size:var(--fs-sm)">Confident matching sounds she hears</div></div><span class="chip chip--success">Strength</span></div>
+                  <div class="task-row"><span data-ic="message" aria-hidden="true"></span><div class="od-fill"><strong>Talking about stories</strong><div class="muted" style="font-size:var(--fs-sm)">Rich ideas and vocabulary</div></div><span class="chip chip--success">Strength</span></div>
+                </div>
+              </div>
+              <div class="card">
+                <h3 class="h3">Where support will help</h3>
+                <div class="stack" style="--od-gap:12px">
+                  <div class="task-row"><span data-ic="puzzle" aria-hidden="true"></span><div class="od-fill"><strong>Blending sounds</strong><div class="muted" style="font-size:var(--fs-sm)">Putting sounds together to read a word</div></div><span class="chip chip--warm">Growing</span></div>
+                  <div class="task-row"><span data-ic="book" aria-hidden="true"></span><div class="od-fill"><strong>Common sight words</strong><div class="muted" style="font-size:var(--fs-sm)">Words to recognise by sight</div></div><span class="chip chip--warm">Growing</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card card--soft mt-5" style="display:flex;gap:var(--sp-4);align-items:center;flex-wrap:wrap">
+              <span data-lumi="encouraging" data-size="96" aria-hidden="true"></span>
+              <div class="od-fill">
+                <h4 class="h4">What I'll do next</h4>
+                <p style="margin:0">We'll start with <strong>ending sounds</strong> — you're already great at rhyme, so this will feel like a friendly next step. Short sessions, and I'll always read things aloud if you want.</p>
+              </div>
+              <button class="btn btn--lg" data-goto="screens" data-target="scr-day">Start this plan<span data-ic="arrow-right"></span></button>
+            </div>
+
+            <div class="row mt-5">
+              <button class="btn btn--secondary" data-goto="screens" data-target="scr-profile"><span data-ic="book"></span>Adjust reading preferences</button>
+              <button class="btn btn--ghost">Download a summary</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 · My Day -->
+      <section class="section demo-frame" id="scr-day">
+        <p class="eyebrow">4 · Child "My Day" home &nbsp;·&nbsp; path: My Day → activity</p>
+        <div class="screen">
+          <div class="appbar">
+            <span class="appbar__brand"><span class="appbar__mark" data-lumi="idle" data-size="30" aria-hidden="true"></span>LumiLearn</span>
+            <div class="appbar__nav">
+              <button class="appnav" aria-current="page"><span data-ic="home"></span>My Day</button>
+              <button class="appnav"><span data-ic="star"></span>Stickers</button>
+            </div>
+          </div>
+          <div class="canvas">
+            <div class="day-hero mb-5">
+              <span data-lumi="encouraging" data-size="96" aria-hidden="true"></span>
+              <div>
+                <h2 class="day-greet">Good afternoon, Ada</h2>
+                <p class="muted" style="margin:4px 0 0">You read on four days this week. Ready for a short one?</p>
+              </div>
+            </div>
+
+            <div class="day-sections">
+              <div class="day-card day-card--accent">
+                <div class="day-head"><span data-ic="flag"></span><h3>Today's reading</h3><span class="chip chip--accent" style="margin-left:auto">3 of 5</span></div>
+                <div class="task-row">
+                  <span data-ic="book" aria-hidden="true"></span>
+                  <div class="od-fill"><strong>Ending sounds</strong><div class="muted" style="font-size:var(--fs-sm)">Match words that rhyme · about 5 min</div></div>
+                  <button class="btn" data-goto="screens" data-target="scr-mission">Start<span data-ic="arrow-right"></span></button>
+                </div>
+                <div class="task-row">
+                  <span data-ic="speaker" aria-hidden="true"></span>
+                  <div class="od-fill"><strong>Listen and pick</strong><div class="muted" style="font-size:var(--fs-sm)">Hear a word, choose its picture</div></div>
+                  <span class="chip chip--success"><span data-ic="check"></span>Done</span>
+                </div>
+              </div>
+
+              <div class="grid grid--2">
+                <div class="day-card">
+                  <div class="day-head"><span data-ic="sparkle"></span><h3>Warm-up</h3></div>
+                  <p class="muted" style="margin:0 0 var(--sp-3)">A 60-second sound game to wake up your ears.</p>
+                  <button class="btn btn--secondary">Play warm-up</button>
+                </div>
+                <div class="day-card">
+                  <div class="day-head"><span data-ic="heart"></span><h3>Your stickers</h3></div>
+                  <p class="muted" style="margin:0 0 var(--sp-3)">You collected two new stickers this week.</p>
+                  <div class="row">
+                    <span class="chip chip--warm"><span data-ic="star"></span>Rhyme helper</span>
+                    <span class="chip chip--warm"><span data-ic="heart"></span>Four days reading</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 · Adaptive learning activity -->
+      <section class="section demo-frame" id="scr-mission">
+        <p class="eyebrow">5 · Adaptive learning activity &nbsp;·&nbsp; path: activity → feedback → help / next</p>
+        <div class="screen">
+          <div class="appbar">
+            <button class="iconbtn" aria-label="Back" data-goto="screens" data-target="scr-day"><span data-ic="arrow-left"></span></button>
+            <span class="appbar__brand">Ending sounds</span>
+            <div class="appbar__nav" aria-hidden="true">
+              <span class="dot is-done"></span><span class="dot is-done"></span><span class="dot is-now"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+          </div>
+          <div class="canvas">
+            <div class="activity-head">
+              <span class="norush"><span data-ic="target"></span>Lumi is matching the difficulty to you</span>
+              <button class="btn btn--ghost btn--sm" style="margin-left:auto"><span data-ic="speaker"></span>Read aloud</button>
+            </div>
+
+            <p class="prompt" id="prompt-text">Which word rhymes with <strong>"light"</strong>?</p>
+
+            <div class="tiles" id="tiles" role="group" aria-label="Answer words">
+              <button class="tile" data-word="night" data-correct="true"><span data-ic="moon" aria-hidden="true"></span>night</button>
+              <button class="tile" data-word="moon" data-correct="false"><span data-ic="moon" aria-hidden="true"></span>moon</button>
+              <button class="tile" data-word="star" data-correct="false"><span data-ic="star" aria-hidden="true"></span>star</button>
+              <button class="tile" data-word="sun" data-correct="false"><span data-ic="sun" aria-hidden="true"></span>sun</button>
+            </div>
+
+            <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+
+            <div class="row mt-5">
+              <button class="btn btn--lg" id="check-btn">Check<span data-ic="check"></span></button>
+            </div>
+
+            <div class="support">
+              <button class="btn btn--secondary" data-support="read"><span data-ic="speaker"></span>Read it to me</button>
+              <button class="btn btn--secondary" data-support="show"><span data-ic="lightbulb"></span>Show me</button>
+              <button class="btn btn--ghost" data-support="break"><span data-ic="clock"></span>I need a break</button>
+            </div>
+
+            <div class="dock" id="dock-mission">
+              <div class="dock__inner">
+                <div class="bubble dock__bubble" id="dock-text">Tap the word that rhymes with "light". There's no hurry.</div>
+                <span class="dock__mini" data-lumi="idle" data-size="72" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 · I don't understand help flow -->
+      <section class="section demo-frame" id="scr-help">
+        <p class="eyebrow">6 · "I don't understand" help flow &nbsp;·&nbsp; path: stuck → choose help → back to activity</p>
+        <div class="screen">
+          <div class="appbar">
+            <button class="iconbtn" aria-label="Back" data-goto="screens" data-target="scr-mission"><span data-ic="arrow-left"></span></button>
+            <span class="appbar__brand">Need a hand?</span>
+          </div>
+          <div class="canvas">
+            <div class="card card--soft mb-5">
+              <span class="muted" style="font-size:var(--fs-sm)">The question was</span>
+              <p class="h4" style="margin:4px 0 0">Which word rhymes with "light"?</p>
+            </div>
+
+            <h3 class="h3">What would help right now?</h3>
+            <p class="muted mb-4">Pick any one. Nothing here counts against you, and Lumi will stay with you.</p>
+
+            <div id="help-options" class="grid grid--2">
+              <button class="tile" data-help="again"><span data-ic="speaker" aria-hidden="true"></span>Read it again</button>
+              <button class="tile" data-help="show"><span data-ic="lightbulb" aria-hidden="true"></span>Show me</button>
+              <button class="tile" data-help="sounds"><span data-ic="puzzle" aria-hidden="true"></span>Break it into sounds</button>
+              <button class="tile" data-help="simpler"><span data-ic="message" aria-hidden="true"></span>Use a simpler word</button>
+              <button class="tile" data-help="break"><span data-ic="clock" aria-hidden="true"></span>I need a break</button>
+            </div>
+
+            <div class="caption mt-5" id="help-response" aria-live="polite">Choose an option and Lumi will explain what happens.</div>
+
+            <details class="details">
+              <summary>What each option does</summary>
+              <p class="muted" style="margin:var(--sp-2) 0 0">Reading again supports listening; "Show me" supports visual learners; breaking into sounds supports decoding; a simpler word lowers the challenge without lowering the goal; a break protects attention. The adaptive engine records which help was used — never as a penalty, only to choose better support next time.</p>
+            </details>
+
+            <div class="dock" id="dock-help">
+              <div class="dock__inner">
+                <div class="bubble dock__bubble">I'm right here. Let's look at it together.</div>
+                <span class="dock__mini" data-lumi="helping" data-size="72" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7 · Vocabulary / visual explanation -->
+      <section class="section demo-frame" id="scr-showme">
+        <p class="eyebrow">7 · Vocabulary / visual explanation &nbsp;·&nbsp; path: "Show me" → step through → back</p>
+        <div class="screen">
+          <div class="appbar">
+            <button class="iconbtn" aria-label="Back" data-goto="screens" data-target="scr-help"><span data-ic="arrow-left"></span></button>
+            <span class="appbar__brand">Let's look together</span>
+          </div>
+          <div class="canvas">
+            <div class="stage-visual">
+              <svg viewBox="0 0 560 260" role="img" aria-label="The words light and night both end with the same sound, ight">
+                <g class="vis-el" data-hl="light">
+                  <rect x="40" y="56" width="210" height="118" rx="20" style="fill:var(--lum-accent-tint);stroke:var(--lum-accent);stroke-width:3"></rect>
+                  <text x="145" y="138" text-anchor="middle" font-size="64" font-weight="700" style="fill:var(--lum-ink)">light</text>
+                </g>
+                <g class="vis-el" data-hl="night">
+                  <rect x="310" y="56" width="210" height="118" rx="20" style="fill:var(--lum-accent-tint);stroke:var(--lum-accent);stroke-width:3"></rect>
+                  <text x="415" y="138" text-anchor="middle" font-size="64" font-weight="700" style="fill:var(--lum-ink)">night</text>
+                </g>
+                <g class="vis-el" data-hl="ight">
+                  <rect x="120" y="176" width="98" height="12" rx="6" style="fill:var(--lum-warm)"></rect>
+                  <rect x="390" y="176" width="98" height="12" rx="6" style="fill:var(--lum-warm)"></rect>
+                  <text x="280" y="232" text-anchor="middle" font-size="20" font-weight="600" style="fill:var(--lum-warm-strong)">same ending sound</text>
+                </g>
+              </svg>
+            </div>
+            <div class="caption" id="vis-caption" aria-live="polite">This is the word "light".</div>
+            <div class="vis-controls">
+              <button class="vis-btn" id="vis-prev" aria-label="Previous step"><span data-ic="arrow-left"></span></button>
+              <button class="vis-btn" id="vis-next">Next<span data-ic="arrow-right"></span></button>
+              <button class="vis-btn" id="vis-replay"><span data-ic="replay"></span>Replay</button>
+              <span class="norush" style="margin-left:auto">Step <span id="vis-count">1 of 4</span></span>
+            </div>
+            <details class="details">
+              <summary>Read it instead</summary>
+              <p class="muted" style="margin:var(--sp-2) 0 0">A text alternative is always available. "Light" and "night" are different words, but they finish with the same sound — "ight". When words finish with the same sound, we say they rhyme.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8 · Lumi companion interaction -->
+      <section class="section demo-frame" id="scr-companion">
+        <p class="eyebrow">8 · Lumi companion interaction &nbsp;·&nbsp; path: present across every screen</p>
+        <div class="screen">
+          <div class="appbar">
+            <span class="appbar__brand"><span data-ic="heart" aria-hidden="true"></span>How Lumi shows up</span>
+          </div>
+          <div class="canvas">
+            <div class="grid grid--2">
+              <div class="card card--soft" style="display:grid;place-items:center;gap:16px;padding:var(--sp-6);text-align:center">
+                <span id="companion-preview" data-lumi="idle" data-size="170"></span>
+                <div class="bubble" style="max-width:100%">I'm here whenever you need me. No rush.</div>
+              </div>
+              <div class="stack" style="--od-gap:16px">
+                <p class="muted" id="companion-caption" style="min-height:3em;margin:0">Resting light: a slow float and a soft glow.</p>
+                <div class="row" role="group" aria-label="Preview a Lumi state">
+                  <button class="btn btn--secondary btn--sm" data-companion-state="idle" aria-pressed="true">Idle</button>
+                  <button class="btn btn--secondary btn--sm" data-companion-state="listening" aria-pressed="false">Listening</button>
+                  <button class="btn btn--secondary btn--sm" data-companion-state="thinking" aria-pressed="false">Thinking</button>
+                  <button class="btn btn--secondary btn--sm" data-companion-state="helping" aria-pressed="false">Helping</button>
+                  <button class="btn btn--secondary btn--sm" data-companion-state="encouraging" aria-pressed="false">Encouraging</button>
+                  <button class="btn btn--secondary btn--sm" data-companion-state="celebrating" aria-pressed="false">Celebrating</button>
+                </div>
+                <div class="banner banner--info"><span data-ic="shield"></span><div><strong>Lumi never scores, ranks or compares.</strong> Lumi is a friend beside you, not a teacher marking your work.</div></div>
+              </div>
+            </div>
+
+            <h3 class="h3 mt-6">When each state appears in the product</h3>
+            <div class="lumi-grid">
+              <div class="lumi-cell"><span data-lumi="idle" data-size="104"></span><div class="lumi-cell__name">Idle</div><p class="lumi-cell__note">Beside every reading screen, waiting calmly.</p></div>
+              <div class="lumi-cell"><span data-lumi="listening" data-size="104"></span><div class="lumi-cell__name">Listening</div><p class="lumi-cell__note">While a question is read aloud, or when the child taps "Read it to me".</p></div>
+              <div class="lumi-cell"><span data-lumi="thinking" data-size="104"></span><div class="lumi-cell__name">Thinking</div><p class="lumi-cell__note">Briefly while the child works, then rests so it never nags.</p></div>
+              <div class="lumi-cell"><span data-lumi="helping" data-size="104"></span><div class="lumi-cell__name">Helping</div><p class="lumi-cell__note">Opens the help flow or a "Show me" explanation.</p></div>
+              <div class="lumi-cell"><span data-lumi="encouraging" data-size="104"></span><div class="lumi-cell__name">Encouraging</div><p class="lumi-cell__note">After effort — a try, a correction, or a helpful question.</p></div>
+              <div class="lumi-cell"><span data-lumi="celebrating" data-size="104"></span><div class="lumi-cell__name">Celebrating</div><p class="lumi-cell__note">Finishing a set or a week of reading. Never a leaderboard.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9 · Parent onboarding -->
+      <section class="section demo-frame" id="scr-setup">
+        <p class="eyebrow">9 · Parent onboarding &nbsp;·&nbsp; path: welcome → child basics → comfort → save</p>
+        <div class="screen">
+          <div class="appbar">
+            <span class="appbar__brand"><span data-ic="shield" aria-hidden="true"></span>LumiLearn for grown-ups</span>
+          </div>
+          <div class="canvas">
+            <h2 class="h2">Set up Ada's reading</h2>
+            <p class="lead">Three quick choices. Everything here can be changed later, and nothing is shared outside your device.</p>
+
+            <form id="setup-form" class="stack" style="--od-gap:24px" novalidate>
+              <div class="grid grid--2">
+                <div class="field">
+                  <label class="label" for="p-name">Child's first name</label>
+                  <input class="input" id="p-name" name="name" value="Ada" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label class="label" for="p-year">School year</label>
+                  <select class="input" id="p-year" name="year">
+                    <option>Year 2</option>
+                    <option selected>Year 3</option>
+                    <option>Year 4</option>
+                  </select>
+                </div>
+              </div>
+
+              <fieldset style="border:2px solid var(--lum-border);border-radius:var(--r-lg);padding:var(--sp-5);margin:0">
+                <legend class="label" style="padding:0 var(--sp-2)">Reading comfort</legend>
+                <div class="grid grid--2">
+                  <div class="field">
+                    <span class="label">Page tint</span>
+                    <div class="seg" role="group" aria-label="Default page tint">
+                      <button type="button" data-set-tint="paper" aria-pressed="true">Paper</button>
+                      <button type="button" data-set-tint="mint" aria-pressed="false">Mint</button>
+                      <button type="button" data-set-tint="lavender" aria-pressed="false">Lavender</button>
+                      <button type="button" data-set-tint="peach" aria-pressed="false">Peach</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <span class="label">Contrast</span>
+                    <div class="seg" role="group" aria-label="Default contrast">
+                      <button type="button" data-set-contrast="standard" aria-pressed="true">Standard</button>
+                      <button type="button" data-set-contrast="high" aria-pressed="false">High</button>
+                      <button type="button" data-set-contrast="dark" aria-pressed="false">Dark</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="stack mt-4" style="--od-gap:12px">
+                  <label class="check"><input type="checkbox" checked><span><strong>Read questions aloud by default</strong></span></label>
+                  <label class="check"><input type="checkbox" checked><span><strong>Show the companion (Lumi) on every screen</strong></span></label>
+                  <label class="check"><input type="checkbox"><span><strong>Send a weekly summary</strong><br><span class="hint">A short email with progress and suggested practice.</span></span></label>
+                </div>
+              </fieldset>
+
+              <div class="banner banner--info" role="status" id="setup-banner" hidden><span data-ic="check"></span><div><strong>Saved.</strong> Ada's reading is ready when you are.</div></div>
+
+              <div class="row">
+                <button class="btn btn--lg" type="submit">Save and continue<span data-ic="arrow-right"></span></button>
+                <button class="btn btn--ghost btn--lg" type="button">Skip for now</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10 · Parent progress dashboard -->
+      <section class="section demo-frame" id="scr-progress">
+        <p class="eyebrow">10 · Parent progress dashboard &nbsp;·&nbsp; path: overview → assign → review</p>
+        <div class="screen">
+          <div class="appbar">
+            <span class="appbar__brand"><span data-ic="chart" aria-hidden="true"></span>Ada's progress</span>
+            <div class="appbar__nav">
+              <button class="appnav" aria-current="page">This week</button>
+              <button class="appnav">All time</button>
+            </div>
+          </div>
+          <div class="canvas">
+            <div class="grid grid--4 mb-5">
+              <div class="stat"><div class="stat__value">4</div><div class="stat__label">days read</div></div>
+              <div class="stat"><div class="stat__value">38<small style="font-size:var(--fs-sm)">min</small></div><div class="stat__label">this week</div></div>
+              <div class="stat"><div class="stat__value">86%</div><div class="stat__label">accuracy</div></div>
+              <div class="stat"><div class="stat__value">7</div><div class="stat__label">sounds mastered</div></div>
+            </div>
+
+            <div class="grid grid--2">
+              <div class="card">
+                <h3 class="h3">Skill focus</h3>
+                <div class="chart">
+                  <div class="bar-row"><span class="bar-label">Rhymes</span><div class="bar-track"><div class="bar" style="--v:9;--max:10"></div></div><span class="bar-value">90%</span></div>
+                  <div class="bar-row"><span class="bar-label">Blending</span><div class="bar-track"><div class="bar" style="--v:8;--max:10"></div></div><span class="bar-value">80%</span></div>
+                  <div class="bar-row"><span class="bar-label">Sight words</span><div class="bar-track"><div class="bar bar--warm" style="--v:6;--max:10"></div></div><span class="bar-value">60%</span></div>
+                  <div class="bar-row"><span class="bar-label">Decoding</span><div class="bar-track"><div class="bar bar--warm" style="--v:5;--max:10"></div></div><span class="bar-value">52%</span></div>
+                </div>
+                <p class="hint mt-4" style="margin-top:var(--sp-4)">Accuracy is never shown to Ada. Grown-ups see it only to choose the next step.</p>
+              </div>
+
+              <div class="card">
+                <h3 class="h3">Suggested next</h3>
+                <div class="stack" style="--od-gap:12px">
+                  <div class="banner banner--attention"><span data-ic="lightbulb"></span><div><strong>Focus on decoding.</strong> Short 5-minute word-building games are working best.</div></div>
+                  <div class="task-row">
+                    <span data-ic="puzzle" aria-hidden="true"></span>
+                    <div class="od-fill"><strong>Build a word</strong><div class="muted" style="font-size:var(--fs-sm)">Initial blends · 5 min</div></div>
+                    <button class="btn btn--secondary btn--sm">Assign</button>
+                  </div>
+                  <div class="task-row">
+                    <span data-ic="speaker" aria-hidden="true"></span>
+                    <div class="od-fill"><strong>Sound sort</strong><div class="muted" style="font-size:var(--fs-sm)">Long vs short vowels · 6 min</div></div>
+                    <button class="btn btn--secondary btn--sm">Assign</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h3 class="h3 mt-6">Recent sessions</h3>
+            <div class="card card--soft">
+              <div class="task-row"><span data-ic="check" aria-hidden="true"></span><div class="od-fill"><strong>Ending sounds</strong><div class="muted" style="font-size:var(--fs-sm)">Today · 6 min</div></div><span class="chip chip--success">Completed</span></div>
+              <div class="task-row"><span data-ic="speaker" aria-hidden="true"></span><div class="od-fill"><strong>Listen and pick</strong><div class="muted" style="font-size:var(--fs-sm)">Yesterday · 5 min</div></div><span class="chip chip--success">Completed</span></div>
+              <div class="task-row"><span data-ic="clock" aria-hidden="true"></span><div class="od-fill"><strong>Warm-up</strong><div class="muted" style="font-size:var(--fs-sm)">Yesterday · 2 min</div></div><span class="chip">Stopped early</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11 · Learner profile & reading preferences -->
+      <section class="section demo-frame" id="scr-profile">
+        <p class="eyebrow">11 · Learner profile &amp; reading preferences &nbsp;·&nbsp; path: profile → adjust → saved</p>
+        <div class="screen">
+          <div class="appbar">
+            <span class="appbar__brand"><span data-ic="user" aria-hidden="true"></span>Ada's reading profile</span>
+          </div>
+          <div class="canvas">
+            <div class="day-hero mb-5">
+              <span data-lumi="encouraging" data-size="88" aria-hidden="true"></span>
+              <div class="od-fill">
+                <h2 class="day-greet">Ada</h2>
+                <p class="muted" style="margin:4px 0 0">Year 3 · reading since September</p>
+              </div>
+              <button class="btn btn--secondary"><span data-ic="settings"></span>Edit details</button>
+            </div>
+
+            <div class="card">
+              <div class="section__head" style="margin-bottom:var(--sp-4)">
+                <h3 class="h3" style="margin:0">Reading preferences</h3>
+                <span class="pill-note"><span data-ic="check"></span>Saved automatically</span>
+              </div>
+
+              <div class="stack" style="--od-gap:20px">
+                <div class="task-row">
+                  <div class="od-fill"><strong>Page colour</strong><div class="muted" style="font-size:var(--fs-sm)">Tints the page only — never the words</div></div>
+                  <div class="seg" role="group" aria-label="Page colour">
+                    <button data-set-tint="paper" aria-pressed="true">Paper</button>
+                    <button data-set-tint="mint" aria-pressed="false">Mint</button>
+                    <button data-set-tint="lavender" aria-pressed="false">Lavender</button>
+                    <button data-set-tint="peach" aria-pressed="false">Peach</button>
+                  </div>
+                </div>
+
+                <div class="task-row">
+                  <div class="od-fill"><strong>Contrast</strong><div class="muted" style="font-size:var(--fs-sm)">Standard, boosted, or dark</div></div>
+                  <div class="seg" role="group" aria-label="Contrast">
+                    <button data-set-contrast="standard" aria-pressed="true">Standard</button>
+                    <button data-set-contrast="high" aria-pressed="false">High</button>
+                    <button data-set-contrast="dark" aria-pressed="false">Dark</button>
+                  </div>
+                </div>
+
+                <div class="task-row">
+                  <div class="od-fill"><strong>Reading font</strong><div class="muted" style="font-size:var(--fs-sm)">Used for passages and questions</div></div>
+                  <select class="input" id="pref-font" style="max-width:260px;min-height:44px;padding:6px 12px">
+                    <option value="'Lexend','Atkinson Hyperlegible',-apple-system,sans-serif">Lexend (default)</option>
+                    <option value="'Atkinson Hyperlegible',-apple-system,sans-serif">Atkinson Hyperlegible</option>
+                    <option value="Georgia,'Times New Roman',serif">Readable serif</option>
+                  </select>
+                </div>
+
+                <div class="task-row">
+                  <div class="od-fill"><strong>Text size</strong><div class="muted" style="font-size:var(--fs-sm)">Adjusts reading text across the app</div></div>
+                  <div class="seg" role="group" aria-label="Text size">
+                    <button data-font-size="s" aria-pressed="false">S</button>
+                    <button data-font-size="m" aria-pressed="true">M</button>
+                    <button data-font-size="l" aria-pressed="false">L</button>
+                    <button data-font-size="xl" aria-pressed="false">XL</button>
+                  </div>
+                </div>
+
+                <div class="task-row">
+                  <div class="od-fill"><strong>Line spacing</strong><div class="muted" style="font-size:var(--fs-sm)">Roomier spacing can help tracking</div></div>
+                  <div class="seg" role="group" aria-label="Line spacing">
+                    <button data-line-space="cozy" aria-pressed="false">Cozy</button>
+                    <button data-line-space="roomy" aria-pressed="true">Roomy</button>
+                    <button data-line-space="extra" aria-pressed="false">Extra</button>
+                  </div>
+                </div>
+
+                <label class="check"><input type="checkbox"><span><strong>Reading ruler</strong><br><span class="hint">A soft highlight follows the line being read.</span></span></label>
+                <label class="check"><input type="checkbox" checked><span><strong>Syllable colouring</strong><br><span class="hint">Shows long words in colour-coded parts (e.g. <strong>but·ter·fly</strong>).</span></span></label>
+                <label class="check"><input type="checkbox" checked><span><strong>Read everything aloud</strong><br><span class="hint">Lumi speaks prompts and passages unless turned off.</span></span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 12 · Settings / accessibility -->
+      <section class="section demo-frame" id="scr-settings">
+        <p class="eyebrow">12 · Settings &amp; accessibility &nbsp;·&nbsp; path: settings → review → save / reset</p>
+        <div class="screen">
+          <div class="appbar">
+            <span class="appbar__brand"><span data-ic="settings" aria-hidden="true"></span>Settings</span>
+          </div>
+          <div class="canvas">
+            <div class="grid grid--2">
+              <div class="card">
+                <h3 class="h3">Accessibility</h3>
+                <div class="stack" style="--od-gap:12px">
+                  <label class="check"><input type="checkbox" id="pref-motion"><span><strong>Reduce motion</strong><br><span class="hint">Stops Lumi's breathing and all transitions. Also follows your system setting.</span></span></label>
+                  <label class="check"><input type="checkbox"><span><strong>Always show focus outlines</strong><br><span class="hint">Helps when navigating with a keyboard.</span></span></label>
+                  <div class="task-row">
+                    <div class="od-fill"><strong>Quick contrast</strong><div class="muted" style="font-size:var(--fs-sm)">Jump straight to a high-contrast page</div></div>
+                    <div class="seg" role="group" aria-label="Contrast">
+                      <button data-set-contrast="standard" aria-pressed="true">Standard</button>
+                      <button data-set-contrast="high" aria-pressed="false">High</button>
+                      <button data-set-contrast="dark" aria-pressed="false">Dark</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3 class="h3">Reading aloud</h3>
+                <div class="stack" style="--od-gap:12px">
+                  <div class="task-row">
+                    <div class="od-fill"><strong>Voice</strong><div class="muted" style="font-size:var(--fs-sm)">Lumi's reading voice</div></div>
+                    <select class="input" style="max-width:220px;min-height:44px;padding:6px 12px">
+                      <option selected>Warm (default)</option>
+                      <option>Clear</option>
+                      <option>Calm</option>
+                    </select>
+                  </div>
+                  <div class="task-row">
+                    <div class="od-fill"><strong>Speed</strong><div class="muted" style="font-size:var(--fs-sm)">Slower can help decoding</div></div>
+                    <div class="seg" role="group" aria-label="Speed">
+                      <button aria-pressed="false">Slow</button>
+                      <button aria-pressed="true">Steady</button>
+                      <button aria-pressed="false">Brisk</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3 class="h3">Companion &amp; alerts</h3>
+                <div class="stack" style="--od-gap:12px">
+                  <label class="check"><input type="checkbox" checked><span><strong>Show Lumi on every screen</strong></span></label>
+                  <label class="check"><input type="checkbox"><span><strong>Weekly progress summary</strong><br><span class="hint">A short email for grown-ups only.</span></span></label>
+                  <label class="check"><input type="checkbox" checked><span><strong>Gentle break reminders</strong><br><span class="hint">Lumi suggests a pause after 15 minutes of reading.</span></span></label>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3 class="h3">Data &amp; privacy</h3>
+                <p class="muted">Everything is stored on this device. Nothing is uploaded unless you choose to share a summary.</p>
+                <div class="row">
+                  <button class="btn btn--secondary"><span data-ic="book"></span>Export Ada's data</button>
+                  <button class="btn btn--danger" data-open-dialog><span data-ic="alert"></span>Reset all data</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="banner banner--info mt-5"><span data-ic="shield"></span><div><strong>LumiLearn never shows Ada a score, a rank or a streak.</strong> Grown-ups can see progress; children only ever see encouragement and what to try next.</div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- Shared dialog -->
+<div class="scrim" id="dialog-scrim" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+    <div class="dialog__head">
+      <div>
+        <h3 class="h3" id="dialog-title">Reset all data?</h3>
+        <p class="muted" style="margin:0">This will delete Ada's progress and stickers from this device. It cannot be undone.</p>
+      </div>
+      <button class="iconbtn" id="dialog-close" aria-label="Close"><span data-ic="close"></span></button>
+    </div>
+    <div class="row row--end">
+      <button class="btn btn--secondary" id="dialog-cancel">Keep it</button>
+      <button class="btn btn--danger" id="dialog-confirm">Reset everything</button>
+    </div>
+  </div>
+</div>
+
+<noscript><p style="padding:24px">This prototype uses JavaScript to render the Lumi companion and drive interactions. Please enable JavaScript.</p></noscript>
+<script src="lumilearn.js"></script>
+</body>
+</html>

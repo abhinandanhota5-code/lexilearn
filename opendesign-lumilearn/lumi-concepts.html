@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" data-tint="paper" data-contrast="standard">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LumiLearn — Celestial Lumi concepts</title>
+<meta name="description" content="Three celestial crescent/star concepts for Lumi, shown across all six companion states for comparison.">
+<link rel="stylesheet" href="lumilearn.css">
+<style>
+  .wrap { max-width: 1220px; margin: 0 auto; padding: clamp(var(--sp-4), 2vw, var(--sp-8)); }
+  .seg { display: inline-flex; gap: 2px; padding: 3px; border: 2px solid var(--lum-border); border-radius: var(--r-pill); background: var(--lum-card); max-width: 100%; overflow-x: auto; }
+  .seg button { flex: none; border: 0; background: transparent; border-radius: var(--r-pill); padding: 7px 13px; font-weight: 600; font-size: var(--fs-sm); color: var(--lum-ink-soft); cursor: pointer; white-space: nowrap; }
+  .seg button[aria-pressed="true"] { background: var(--lum-surface); color: var(--lum-accent-strong); box-shadow: var(--shadow-sm); }
+
+  /* ── Celestial Lumi (concept-scoped; does not touch the prototype's .lumi) ── */
+  .cl { width: var(--cl-size, 120px); height: auto; overflow: visible; }
+  .cl-shadow { fill: rgba(15,23,42,.10); }
+  .cl-surface { fill: var(--lum-accent); }
+  .cl-star-body { stroke: var(--lum-accent); stroke-width: 15; stroke-linejoin: round; stroke-linecap: round; }
+  .cl-accent-star, .cl-companion-star, .cl-spark, .cl-helpstar-path { fill: var(--lum-warm); }
+  .cl-eye { fill: #fff; }
+  .cl-pupil { fill: #12222a; }
+  .cl-glint { fill: #fff; }
+  .cl-mouth { fill: none; stroke: #0a3b35; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+  .cl-mouth--open { fill: #0a3b35; stroke: none; }
+  .cl-arc { fill: none; stroke: var(--lum-accent-strong); stroke-width: 3; stroke-linecap: round; }
+  .cl-think circle { fill: var(--lum-ink-faint); }
+
+  .cl-exp, .cl-think, .cl-arcs, .cl-sparkles, .cl-helpstar { display: none; }
+  .cl-companion { display: block; }
+  .cl--idle .cl-exp--idle, .cl--listening .cl-exp--listening, .cl--thinking .cl-exp--thinking,
+  .cl--helping .cl-exp--helping, .cl--encouraging .cl-exp--encouraging, .cl--celebrating .cl-exp--celebrating { display: block; }
+  .cl--thinking .cl-think, .cl--listening .cl-arcs,
+  .cl--celebrating .cl-sparkles, .cl--encouraging .cl-sparkles, .cl--helping .cl-helpstar { display: block; }
+
+  .cl-body { transform-box: fill-box; transform-origin: 50% 72%; }
+  .cl--idle .cl-body { animation: cl-float 3.8s ease-in-out infinite; }
+  .cl--listening .cl-body { animation: cl-tilt 3s ease-in-out 3; }
+  .cl--thinking .cl-body { animation: cl-ponder 1.8s ease-in-out 4; }
+  .cl--helping .cl-body { animation: cl-help 1.4s ease-out 2; }
+  .cl--encouraging .cl-body { animation: cl-cheer .9s cubic-bezier(.34,1.4,.5,1) 3; }
+  .cl--celebrating .cl-body { animation: cl-pop 1.15s cubic-bezier(.34,1.4,.5,1) 3; }
+  .cl--idle .cl-glow { animation: cl-breathe 3.8s ease-in-out infinite; }
+  .cl-think circle { animation: cl-dot 1.2s ease-in-out 4; }
+  .cl-think circle:nth-child(2) { animation-delay: .15s; }
+  .cl-think circle:nth-child(3) { animation-delay: .3s; }
+  .cl-sparkles .cl-spark { transform-box: fill-box; transform-origin: center; animation: cl-twinkle 1.1s ease-in-out 3; }
+  .cl-sparkles .cl-spark:nth-child(2) { animation-delay: .18s; }
+  .cl-sparkles .cl-spark:nth-child(3) { animation-delay: .32s; }
+  .cl-helpstar { transform-box: fill-box; transform-origin: center; animation: cl-lift 1.4s ease-out 2; }
+  .cl--idle .cl-companion-star { transform-box: fill-box; transform-origin: center; animation: cl-float2 4.2s ease-in-out infinite; }
+  .cl--encouraging .cl-companion-star, .cl--celebrating .cl-companion-star { transform-box: fill-box; transform-origin: center; animation: cl-twinkle 1.1s ease-in-out 3; }
+  .cl--helping .cl-companion-star { transform-box: fill-box; transform-origin: center; animation: cl-lift 1.4s ease-out 2; }
+  .cl-static .cl-body, .cl-static .cl-glow, .cl-static .cl-think circle, .cl-static .cl-spark,
+  .cl-static .cl-helpstar, .cl-static .cl-companion-star { animation: none !important; }
+
+  @keyframes cl-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  @keyframes cl-float2 { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-3px) scale(1.04); } }
+  @keyframes cl-tilt { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-7deg); } }
+  @keyframes cl-ponder { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(2deg); } }
+  @keyframes cl-help { 0% { transform: scale(1); } 50% { transform: scale(1.06) translateY(-2px); } 100% { transform: scale(1); } }
+  @keyframes cl-cheer { 0%,100% { transform: translateY(0) scale(1); } 45% { transform: translateY(-8px) scale(1.04); } }
+  @keyframes cl-pop { 0% { transform: scale(1) rotate(0); } 30% { transform: scale(1.09) rotate(-4deg); } 60% { transform: scale(1.02) rotate(3deg); } 100% { transform: scale(1) rotate(0); } }
+  @keyframes cl-breathe { 0%,100% { opacity: .8; } 50% { opacity: 1; } }
+  @keyframes cl-dot { 0%,100% { opacity: .3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+  @keyframes cl-twinkle { 0%,100% { opacity: 0; transform: scale(.6); } 50% { opacity: 1; transform: scale(1.12); } }
+  @keyframes cl-lift { 0% { transform: translateY(0); } 50% { transform: translateY(-7px); } 100% { transform: translateY(0); } }
+
+  .cl-stage { background: var(--lum-card); border: 1px solid var(--lum-border); border-radius: var(--r-lg); padding: var(--sp-5); display: grid; place-items: center; gap: var(--sp-4); }
+  .cl-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: var(--sp-3); }
+  .cl-strip .cell { display: grid; justify-items: center; gap: 6px; padding: var(--sp-2); background: var(--lum-card); border: 1px solid var(--lum-border); border-radius: var(--r-md); }
+  .cl-strip .cell span { font-size: 11px; font-weight: 600; color: var(--lum-ink-soft); }
+  .concept.is-picked { border-color: var(--lum-accent); box-shadow: 0 0 0 3px var(--lum-accent-soft); }
+  .cl-icon-scale { display: inline-flex; align-items: center; gap: var(--sp-2); }
+  .cl-icon-scale .cl { flex: none; }
+  @media (prefers-reduced-motion: reduce) { .cl * { animation: none !important; } }
+  html[data-motion="reduce"] .cl * { animation: none !important; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <a class="pill-note" href="index.html">← Back to the LumiLearn prototype</a>
+
+  <header style="margin:var(--sp-5) 0 var(--sp-6)">
+    <p class="eyebrow">Companion redesign · review</p>
+    <h1 class="h1">A celestial Lumi</h1>
+    <p class="lead">Three directions for the new Lumi — a small crescent moon and/or star that reads as a gentle guiding light. Each is shown across all six states and at icon scale. The prototype now uses Concept B (Starling); the other two are kept here for reference.</p>
+    <div class="row">
+      <span class="control__label" style="align-self:center">Page contrast</span>
+      <div class="seg" role="group" aria-label="Page contrast">
+        <button data-cset="standard" aria-pressed="true">Standard</button>
+        <button data-cset="dark" aria-pressed="false">Dark</button>
+      </div>
+      <span class="muted" style="font-size:var(--fs-sm)">Check the glow and outlines in dark mode before deciding.</span>
+    </div>
+  </header>
+
+  <!-- Concept A -->
+  <section class="card concept" data-concept="A" style="margin-bottom:var(--sp-7)">
+    <div class="row row--between" style="align-items:flex-start">
+      <div>
+        <p class="eyebrow">Concept A · Crescent-first</p>
+        <h2 class="h2" style="margin-bottom:4px">Crescent Bloom</h2>
+        <p class="muted" style="margin:0">The body <em>is</em> the light: one thick, softly rounded crescent moon, with a small warm star resting on the upper horn. Reads as a single calm shape.</p>
+      </div>
+      <span class="chip chip--accent" data-badge="A" hidden>Selected</span>
+    </div>
+
+    <div class="grid grid--2" style="margin-top:var(--sp-5)">
+      <div class="cl-stage">
+        <span data-hero="A"></span>
+        <div class="seg" role="group" aria-label="Preview state for Crescent Bloom">
+          <button data-state="idle" data-for="A" aria-pressed="true">Idle</button>
+          <button data-state="listening" data-for="A" aria-pressed="false">Listening</button>
+          <button data-state="thinking" data-for="A" aria-pressed="false">Thinking</button>
+          <button data-state="helping" data-for="A" aria-pressed="false">Helping</button>
+          <button data-state="encouraging" data-for="A" aria-pressed="false">Encouraging</button>
+          <button data-state="celebrating" data-for="A" aria-pressed="false">Celebrating</button>
+        </div>
+        <p class="muted" data-caption="A" style="margin:0;text-align:center;min-height:2.6em">Resting light: slow float and a soft glow.</p>
+      </div>
+      <div>
+        <h4 class="h4">All six states</h4>
+        <div class="cl-strip" data-strip="A"></div>
+        <h4 class="h4" style="margin-top:var(--sp-5)">At icon scale</h4>
+        <div class="cl-icon-scale"><span data-icon="A" data-icon-state="idle"></span><span data-icon="A" data-icon-state="helping"></span><span data-icon="A" data-icon-state="celebrating"></span><span class="muted" style="font-size:var(--fs-xs)">26px — idle, helping, celebrating</span></div>
+        <div class="row" style="margin-top:var(--sp-5)">
+          <button class="btn btn--secondary" data-pick="A">Choose Crescent Bloom</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Concept B -->
+  <section class="card concept is-picked" data-concept="B" style="margin-bottom:var(--sp-7)">
+    <div class="row row--between" style="align-items:flex-start">
+      <div>
+        <p class="eyebrow">Concept B · Star-first</p>
+        <h2 class="h2" style="margin-bottom:4px">Starling</h2>
+        <p class="muted" style="margin:0">A rounded five-point star with soft, weighty corners. Warm star spark at the crown. The most "guiding light" of the three and the most distinct as a tiny avatar.</p>
+      </div>
+      <span class="chip chip--accent" data-badge="B">Selected</span>
+    </div>
+
+    <div class="grid grid--2" style="margin-top:var(--sp-5)">
+      <div class="cl-stage">
+        <span data-hero="B"></span>
+        <div class="seg" role="group" aria-label="Preview state for Starling">
+          <button data-state="idle" data-for="B" aria-pressed="true">Idle</button>
+          <button data-state="listening" data-for="B" aria-pressed="false">Listening</button>
+          <button data-state="thinking" data-for="B" aria-pressed="false">Thinking</button>
+          <button data-state="helping" data-for="B" aria-pressed="false">Helping</button>
+          <button data-state="encouraging" data-for="B" aria-pressed="false">Encouraging</button>
+          <button data-state="celebrating" data-for="B" aria-pressed="false">Celebrating</button>
+        </div>
+        <p class="muted" data-caption="B" style="margin:0;text-align:center;min-height:2.6em">Resting light: slow float and a soft glow.</p>
+      </div>
+      <div>
+        <h4 class="h4">All six states</h4>
+        <div class="cl-strip" data-strip="B"></div>
+        <h4 class="h4" style="margin-top:var(--sp-5)">At icon scale</h4>
+        <div class="cl-icon-scale"><span data-icon="B" data-icon-state="idle"></span><span data-icon="B" data-icon-state="helping"></span><span data-icon="B" data-icon-state="celebrating"></span><span class="muted" style="font-size:var(--fs-xs)">26px — idle, helping, celebrating</span></div>
+        <div class="row" style="margin-top:var(--sp-5)">
+          <button class="btn btn--secondary" data-pick="B">Choose Starling</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Concept C -->
+  <section class="card concept" data-concept="C" style="margin-bottom:var(--sp-7)">
+    <div class="row row--between" style="align-items:flex-start">
+      <div>
+        <p class="eyebrow">Concept C · Crescent + star</p>
+        <h2 class="h2" style="margin-bottom:4px">Moonglow</h2>
+        <p class="muted" style="margin:0">A crescent cradling a warm star — two celestial forms, one companion. The star is Lumi's "guiding light" and changes with the state; the crescent holds the face.</p>
+      </div>
+      <span class="chip chip--accent" data-badge="C" hidden>Selected</span>
+    </div>
+
+    <div class="grid grid--2" style="margin-top:var(--sp-5)">
+      <div class="cl-stage">
+        <span data-hero="C"></span>
+        <div class="seg" role="group" aria-label="Preview state for Moonglow">
+          <button data-state="idle" data-for="C" aria-pressed="true">Idle</button>
+          <button data-state="listening" data-for="C" aria-pressed="false">Listening</button>
+          <button data-state="thinking" data-for="C" aria-pressed="false">Thinking</button>
+          <button data-state="helping" data-for="C" aria-pressed="false">Helping</button>
+          <button data-state="encouraging" data-for="C" aria-pressed="false">Encouraging</button>
+          <button data-state="celebrating" data-for="C" aria-pressed="false">Celebrating</button>
+        </div>
+        <p class="muted" data-caption="C" style="margin:0;text-align:center;min-height:2.6em">Resting light: slow float and a soft glow.</p>
+      </div>
+      <div>
+        <h4 class="h4">All six states</h4>
+        <div class="cl-strip" data-strip="C"></div>
+        <h4 class="h4" style="margin-top:var(--sp-5)">At icon scale</h4>
+        <div class="cl-icon-scale"><span data-icon="C" data-icon-state="idle"></span><span data-icon="C" data-icon-state="helping"></span><span data-icon="C" data-icon-state="celebrating"></span><span class="muted" style="font-size:var(--fs-xs)">26px — idle, helping, celebrating</span></div>
+        <div class="row" style="margin-top:var(--sp-5)">
+          <button class="btn btn--secondary" data-pick="C">Choose Moonglow</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="banner banner--success" id="choice-bar" style="margin-bottom:var(--sp-6)">
+    <span data-ic="sparkle"></span>
+    <div><strong>Concept B · Starling is live.</strong> It now appears across all twelve prototype screens. Concepts A and C are kept here for reference.</div>
+  </div>
+
+  <section class="card card--soft">
+    <h3 class="h3">How they differ</h3>
+    <div class="grid grid--3" style="margin-top:var(--sp-4)">
+      <div class="stat"><div class="stat__value" style="font-size:var(--fs-lg)">Crescent Bloom</div><div class="stat__label">Warmest and calmest; the moon itself is the character.</div></div>
+      <div class="stat"><div class="stat__value" style="font-size:var(--fs-lg)">Starling</div><div class="stat__label">Most distinctive and most "guiding light"; boldest silhouette.</div></div>
+      <div class="stat"><div class="stat__value" style="font-size:var(--fs-lg)">Moonglow</div><div class="stat__label">Most expressive — the star adds a second moving element for states.</div></div>
+    </div>
+    <p class="muted" style="margin:var(--sp-4) 0 0;font-size:var(--fs-sm)">All three keep Lumi Teal as the body with a warm amber celestial accent, a simple expressive face, and the same six states. Only idle floats/glows in a loop; every other state plays briefly and rests. Motion collapses under reduced-motion.</p>
+  </section>
+
+  <p class="faint" style="margin-top:var(--sp-6);font-size:var(--fs-xs)">Concept B (Starling) now appears across all twelve prototype screens. This comparison page is kept for reference.</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  var CAPTIONS = {
+    idle: 'Resting light: slow float and a soft glow.',
+    listening: 'Tilts toward the voice with wide, attentive eyes.',
+    thinking: 'Looks up and ponders while the child works, then settles.',
+    helping: 'A warm star lifts up — Lumi steps in to guide.',
+    encouraging: 'A gentle cheer with happy, closed eyes.',
+    celebrating: 'A brief sparkle burst for milestones, then back to calm.'
+  };
+  var NAMES = { A: 'Crescent Bloom', B: 'Starling', C: 'Moonglow' };
+  var STATES = ['idle', 'listening', 'thinking', 'helping', 'encouraging', 'celebrating'];
+  var LABELS = { idle: 'Idle', listening: 'Listening', thinking: 'Thinking', helping: 'Helping', encouraging: 'Encouraging', celebrating: 'Celebrating' };
+
+  function star4path(cx, cy, R, w) {
+    return 'M' + cx + ' ' + (cy - R) +
+      ' L' + (cx + w) + ' ' + (cy - w) + ' L' + (cx + R) + ' ' + cy +
+      ' L' + (cx + w) + ' ' + (cy + w) + ' L' + cx + ' ' + (cy + R) +
+      ' L' + (cx - w) + ' ' + (cy + w) + ' L' + (cx - R) + ' ' + cy +
+      ' L' + (cx - w) + ' ' + (cy - w) + ' Z';
+  }
+  function star4(cx, cy, R, w, cls) {
+    return '<path class="' + (cls || 'cl-spark') + '" d="' + star4path(cx, cy, R, w) + '"/>';
+  }
+
+  function expressions(fx, fy) {
+    var t = ' transform="translate(' + fx + ',' + fy + ')"';
+    return '' +
+      '<g class="cl-exp cl-exp--idle"' + t + '>' +
+        '<circle class="cl-eye" cx="-11" cy="-2" r="9.5"/><circle class="cl-eye" cx="11" cy="-2" r="9.5"/>' +
+        '<circle class="cl-pupil" cx="-10" cy="-1" r="4.6"/><circle class="cl-pupil" cx="12" cy="-1" r="4.6"/>' +
+        '<circle class="cl-glint" cx="-8.4" cy="-3.4" r="1.7"/><circle class="cl-glint" cx="13.6" cy="-3.4" r="1.7"/>' +
+        '<path class="cl-mouth" d="M-7 12 Q0 18 7 12"/>' +
+      '</g>' +
+      '<g class="cl-exp cl-exp--listening"' + t + '>' +
+        '<circle class="cl-eye" cx="-11" cy="-2" r="10.4"/><circle class="cl-eye" cx="11" cy="-2" r="10.4"/>' +
+        '<circle class="cl-pupil" cx="-11" cy="-2" r="4.8"/><circle class="cl-pupil" cx="11" cy="-2" r="4.8"/>' +
+        '<circle class="cl-glint" cx="-9" cy="-4.4" r="1.9"/><circle class="cl-glint" cx="13" cy="-4.4" r="1.9"/>' +
+        '<circle class="cl-mouth" cx="0" cy="14" r="3.6"/>' +
+      '</g>' +
+      '<g class="cl-exp cl-exp--thinking"' + t + '>' +
+        '<path class="cl-mouth" d="M-19 -4 Q-11 -11 -3 -4"/><path class="cl-mouth" d="M3 -4 Q11 -11 19 -4"/>' +
+        '<path class="cl-mouth" d="M-5 14 H5"/>' +
+      '</g>' +
+      '<g class="cl-exp cl-exp--helping"' + t + '>' +
+        '<circle class="cl-eye" cx="-11" cy="-2" r="9.5"/><circle class="cl-eye" cx="11" cy="-2" r="9.5"/>' +
+        '<circle class="cl-pupil" cx="-10" cy="-1" r="4.6"/><circle class="cl-pupil" cx="12" cy="-1" r="4.6"/>' +
+        '<circle class="cl-glint" cx="-8.4" cy="-3.4" r="1.7"/><circle class="cl-glint" cx="13.6" cy="-3.4" r="1.7"/>' +
+        '<path class="cl-mouth" d="M-8 11 Q0 20 8 11"/>' +
+      '</g>' +
+      '<g class="cl-exp cl-exp--encouraging"' + t + '>' +
+        '<path class="cl-mouth" d="M-19 -3 Q-11 -11 -3 -3"/><path class="cl-mouth" d="M3 -3 Q11 -11 19 -3"/>' +
+        '<path class="cl-mouth cl-mouth--open" d="M-8 11 Q0 21 8 11 Z"/>' +
+      '</g>' +
+      '<g class="cl-exp cl-exp--celebrating"' + t + '>' +
+        '<path class="cl-mouth" d="M-19 -4 Q-11 -12 -3 -4"/><path class="cl-mouth" d="M3 -4 Q11 -12 19 -4"/>' +
+        '<path class="cl-mouth cl-mouth--open" d="M-9 10 Q0 23 9 10 Z"/>' +
+      '</g>';
+  }
+
+  function accessories(state) {
+    if (state === 'thinking') {
+      return '<g class="cl-think"><circle cx="97" cy="30" r="4"/><circle cx="106" cy="20" r="3"/><circle cx="114" cy="12" r="2"/></g>';
+    }
+    if (state === 'listening') {
+      return '<g class="cl-arcs"><path class="cl-arc" d="M18 46 A9 9 0 0 0 18 60"/><path class="cl-arc" d="M11 42 A15 15 0 0 0 11 64"/></g>';
+    }
+    if (state === 'helping') {
+      return '<g class="cl-helpstar">' + star4(101, 32, 15, 4.5, 'cl-helpstar-path') + '</g>';
+    }
+    if (state === 'celebrating') {
+      return '<g class="cl-sparkles">' + star4(20, 30, 11, 3) + star4(102, 26, 13, 3.5) + star4(105, 72, 9, 2.5) + star4(24, 106, 9, 2.5) + '</g>';
+    }
+    if (state === 'encouraging') {
+      return '<g class="cl-sparkles">' + star4(99, 34, 8, 2.5) + star4(20, 98, 7, 2) + '</g>';
+    }
+    return '';
+  }
+
+  function bodyMarkup(id, state) {
+    var shadow, glow, body, face, comp = '', acc = accessories(state);
+    if (id === 'A') {
+      shadow = '<ellipse class="cl-shadow" cx="58" cy="132" rx="30" ry="6"/>';
+      glow = '<g class="cl-glow"><circle cx="56" cy="76" r="54" fill="var(--lum-accent)" opacity=".10"/><circle cx="56" cy="76" r="42" fill="var(--lum-accent)" opacity=".10"/></g>';
+      body = '<path class="cl-surface" fill-rule="evenodd" d="M56 72 m-48 0 a48 48 0 1 0 96 0 a48 48 0 1 0 -96 0 Z M100 38 m-50 0 a50 50 0 1 0 100 0 a50 50 0 1 0 -100 0 Z"/>'
+        + '<path class="cl-accent-star" d="' + star4path(100, 28, 13, 4) + '"/>';
+      face = expressions(40, 84);
+    } else if (id === 'B') {
+      shadow = '<ellipse class="cl-shadow" cx="60" cy="130" rx="32" ry="6"/>';
+      glow = '<g class="cl-glow"><circle cx="60" cy="70" r="56" fill="var(--lum-accent)" opacity=".10"/><circle cx="60" cy="70" r="44" fill="var(--lum-accent)" opacity=".10"/></g>';
+      body = '<path class="cl-surface cl-star-body" d="M60 24 L71.8 51.8 L101.8 54.4 L79 74.2 L85.9 103.6 L60 88 L34.1 103.6 L41 74.2 L18.2 54.4 L48.2 51.8 Z"/>'
+        + '<path class="cl-accent-star" d="' + star4path(60, 10, 10, 3) + '"/>';
+      face = expressions(60, 64);
+    } else {
+      shadow = '<ellipse class="cl-shadow" cx="54" cy="132" rx="30" ry="6"/>';
+      glow = '<g class="cl-glow"><circle cx="54" cy="78" r="54" fill="var(--lum-accent)" opacity=".10"/><circle cx="54" cy="78" r="42" fill="var(--lum-accent)" opacity=".10"/></g>';
+      body = '<path class="cl-surface" fill-rule="evenodd" d="M52 74 m-46 0 a46 46 0 1 0 92 0 a46 46 0 1 0 -92 0 Z M98 36 m-48 0 a48 48 0 1 0 96 0 a48 48 0 1 0 -96 0 Z"/>';
+      face = expressions(38, 84);
+      comp = '<g class="cl-companion">' + star4(86, 58, 16, 5, 'cl-companion-star') + '</g>';
+    }
+    return shadow + glow + '<g class="cl-body">' + body + face + '</g>' + comp + acc;
+  }
+
+  function clSVG(id, state, size, animate) {
+    return '<svg class="cl cl--' + id + ' cl--' + state + (animate === false ? ' cl-static' : '') + '" viewBox="0 0 120 140" role="img" aria-label="' + NAMES[id] + ' — ' + LABELS[state] + '" style="--cl-size:' + size + 'px">' + bodyMarkup(id, state) + '</svg>';
+  }
+
+  /* Build the state strips */
+  STATE_KEYS = {};
+  STATES.forEach(function (s) { STATE_KEYS[s] = true; });
+  Object.keys(NAMES).forEach(function (id) {
+    var strip = $('[data-strip="' + id + '"]');
+    if (strip) {
+      strip.innerHTML = STATES.map(function (s) {
+        return '<div class="cell">' + clSVG(id, s, 72, false) + '<span>' + LABELS[s] + '</span></div>';
+      }).join('');
+    }
+    var hero = $('[data-hero="' + id + '"]');
+    if (hero) hero.innerHTML = clSVG(id, 'idle', 200, true);
+    var caption = $('[data-caption="' + id + '"]');
+    if (caption) caption.textContent = CAPTIONS.idle;
+  });
+
+  /* Icon-scale renders */
+  $$('[data-icon]').forEach(function (host) {
+    var id = host.getAttribute('data-icon');
+    var st = host.getAttribute('data-icon-state') || 'idle';
+    host.innerHTML = clSVG(id, st, 26, true);
+  });
+
+  /* Hero state switching */
+  $$('[data-state]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-for');
+      var state = btn.getAttribute('data-state');
+      var hero = $('[data-hero="' + id + '"]');
+      if (hero) hero.innerHTML = clSVG(id, state, 200, true);
+      var caption = $('[data-caption="' + id + '"]');
+      if (caption) caption.textContent = CAPTIONS[state];
+      $$('[data-state][data-for="' + id + '"]').forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
+    });
+  });
+
+  /* Preference selection */
+  $$('[data-pick]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.getAttribute('data-pick');
+      $$('.concept').forEach(function (card) {
+        card.classList.toggle('is-picked', card.getAttribute('data-concept') === id);
+      });
+      $$('[data-badge]').forEach(function (b) {
+        b.hidden = b.getAttribute('data-badge') !== id;
+      });
+      var bar = $('#choice-bar');
+      if (bar) bar.innerHTML = '<span class="ic-host"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg></span><div><strong>You chose ' + NAMES[id] + '.</strong> Tell me and I\'ll roll this Lumi across all twelve screens — the comparison page stays while the production Lumi is built.</div>';
+    });
+  });
+
+  /* Page contrast */
+  $$('[data-cset]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.getAttribute('data-cset');
+      if (v === 'standard') document.documentElement.removeAttribute('data-contrast');
+      else document.documentElement.setAttribute('data-contrast', v);
+      $$('[data-cset]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    });
+  });
+})();
+</script>
+</body>
+</html>

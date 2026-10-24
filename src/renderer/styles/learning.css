@@ -1,0 +1,646 @@
+/**
+ * Learning-Facing UI Styles (Phase 6 Step 2).
+ * Mission landing, activity host, audio/replay, help panel.
+ * Built on the same dyslexia-accessible tokens as the screening UI.
+ *
+ * Motion rules mirror learner.css: subtle springs only, honors
+ * prefers-reduced-motion, no shaming/pressure visuals anywhere.
+ */
+
+/* ─── Mission landing ────────────────────────────────────────────── */
+
+.mission-objective-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  padding: 6px 16px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+.mission-goal {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-lg);
+  margin: var(--space-md) 0 0 0;
+}
+
+/* ─── Activity host ──────────────────────────────────────────────── */
+
+.activity-support-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0 0;
+  flex-wrap: wrap;
+}
+
+.audio-btn {
+  min-height: var(--target-size-min);
+  min-width: var(--target-size-min);
+  padding: 0 var(--space-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--target-radius);
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.2s ease,
+              background-color 0.2s ease;
+}
+
+.audio-btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.audio-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.audio-btn:focus-visible {
+  box-shadow: 0 0 0 var(--focus-ring-offset) rgba(59, 130, 246, 0.35);
+}
+
+.audio-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.audio-btn.is-speaking {
+  border-color: var(--color-accent);
+  background-color: var(--color-bg-primary);
+}
+
+/* Build-mode trays (word tiles / syllable chunks) */
+
+.build-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: center;
+  min-height: 76px;
+  padding: var(--space-sm);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--target-radius);
+  background-color: var(--color-bg-primary);
+  margin-bottom: var(--space-md);
+}
+
+.build-tray .tile-chip.is-placed {
+  opacity: 0.35;
+}
+
+.tile-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: center;
+  margin: var(--space-md) 0;
+}
+
+.tile-chip {
+  min-height: var(--target-size-min);
+  min-width: 64px;
+  padding: 0 var(--space-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-card);
+  border: 3px solid var(--color-border);
+  border-radius: var(--target-radius);
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.2s ease,
+              opacity 0.2s ease;
+}
+
+.tile-chip:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.tile-chip:focus-visible {
+  box-shadow: 0 0 0 var(--focus-ring-offset) rgba(59, 130, 246, 0.35);
+}
+
+.tile-chip.is-placed {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Build-mode answer feedback — same green/gentle language as option-btn.
+   Only the learner's own placement is marked; the answer is never revealed. */
+.tile-chip.is-correct {
+  background-color: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success);
+  animation: option-correct-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tile-chip.is-incorrect {
+  background-color: var(--color-bg-card);
+  border-color: var(--color-border);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+/* ─── Help panel ("I don't understand" — §10) ────────────────────── */
+
+.help-trigger {
+  min-height: var(--target-size-min);
+  padding: 0 var(--space-lg);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--target-radius);
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.2s ease;
+}
+
+.help-trigger:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.help-trigger:focus-visible {
+  box-shadow: 0 0 0 var(--focus-ring-offset) rgba(59, 130, 246, 0.35);
+}
+
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+  animation: help-fade-in 0.25s ease both;
+}
+
+@keyframes help-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.help-panel {
+  background-color: var(--color-bg-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  padding: var(--space-xl);
+  width: min(620px, calc(100vw - var(--space-xl) * 2));
+  max-height: min(80vh, 640px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  text-align: center;
+  animation: help-panel-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes help-panel-pop {
+  0%   { opacity: 0; transform: scale(0.95) translateY(12px); }
+  60%  { opacity: 1; transform: scale(1.02) translateY(-3px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.help-panel-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.help-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+@media (max-width: 640px) {
+  .help-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+.help-option-btn {
+  min-height: var(--target-size-min);
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  border: 2px solid var(--color-border);
+  border-radius: var(--target-radius);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.help-option-btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.help-option-btn:focus-visible {
+  box-shadow: 0 0 0 var(--focus-ring-offset) rgba(59, 130, 246, 0.35);
+}
+
+.help-option-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.help-content {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: var(--space-md);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-standard);
+  color: var(--color-text-primary);
+  text-align: left;
+  word-break: break-word;
+}
+
+.help-content.is-empty {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.help-close-btn {
+  align-self: center;
+  min-height: var(--target-size-min);
+  padding: 0 var(--space-xl);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: #FFFFFF;
+  background-color: var(--color-accent);
+  border: none;
+  border-radius: var(--target-radius);
+  cursor: pointer;
+  outline: none;
+}
+
+.help-close-btn:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.help-close-btn:focus-visible {
+  box-shadow: 0 0 0 var(--focus-ring-offset) rgba(59, 130, 246, 0.35);
+}
+
+/* ─── Break / celebration card (mission suggestions) ─────────────── */
+
+.break-emoji {
+  font-size: 88px;
+  line-height: 1;
+  display: inline-block;
+  animation: celebration-bounce 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+/* ─── Visual Explanation ("Imagine It") ─────────────────────────────
+ *
+ * Trusted application-defined primitives only: shapes come from fixed
+ * builders in visual-explanation.js, labels/text via textContent, and all
+ * motion is CSS-class driven so `prefers-reduced-motion` can disable it.
+ * Interaction targets are ≥44px; one clear focus per visual; text
+ * alternative always rendered alongside the stage.
+ */
+.visual-explanation {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.visual-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.visual-stage-wrap {
+  background: linear-gradient(180deg, #eef6ff 0%, #ffffff 100%);
+  border: 2px solid var(--accent);
+  border-radius: 16px;
+  padding: 10px;
+}
+
+.visual-stage {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+}
+
+.visual-label {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--text);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.visual-caption {
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.08);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Controls — large ≥44px targets */
+.visual-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.visual-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 16px;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.visual-btn:hover { background: rgba(59, 130, 246, 0.08); }
+
+/* Elements */
+.visual-el { transition: opacity 0.4s ease, transform 0.4s ease; transform-origin: center; }
+
+.visual-el.is-dimmed { opacity: 0.35; }
+
+.visual-el.is-active { opacity: 1; }
+
+.visual-el.is-active .visual-vapor-core { fill: rgba(96, 165, 250, 0.85); }
+
+.visual-interactive { cursor: pointer; }
+
+.visual-interactive:focus-visible,
+.visual-interactive.is-selected { outline: none; }
+
+.visual-interactive:focus-visible .visual-shape,
+.visual-interactive.is-selected .visual-shape,
+.visual-interactive.is-selected,
+.visual-interactive:focus-visible {
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.9));
+}
+
+/* Expanded tap area for interactive SVG elements */
+.visual-interactive::after { content: none; }
+
+.visual-rel-line {
+  stroke: rgba(100, 116, 139, 0.55);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+
+.visual-arrow-line { stroke: var(--accent); stroke-width: 3; fill: none; }
+.visual-arrow-head { fill: var(--accent); }
+
+.visual-sun-core { fill: #fbbf24; }
+.visual-sun-ray { stroke: #fbbf24; stroke-width: 3; stroke-linecap: round; }
+
+.visual-droplet-body { fill: rgba(59, 130, 246, 0.65); }
+.visual-vapor-core { fill: rgba(148, 163, 184, 0.6); transition: fill 0.4s ease; }
+
+.visual-puddle-body { fill: rgba(59, 130, 246, 0.5); }
+.visual-puddle-surface { fill: rgba(147, 197, 253, 0.7); }
+
+.visual-stem-line { stroke: #4ade80; stroke-linecap: round; }
+.visual-root-line { stroke: #a16207; stroke-width: 3; fill: none; stroke-linecap: round; }
+.visual-leaf-body { fill: rgba(74, 222, 128, 0.75); }
+.visual-leaf-vein { stroke: #15803d; stroke-width: 2; }
+.visual-petal { fill: rgba(244, 114, 182, 0.8); }
+.visual-flower-core { fill: #fbbf24; }
+
+.visual-heat-line {
+  stroke: #f97316;
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+/* Letter/syllable/word tiles (reading templates) — large, high-contrast,
+   dyslexia-friendly. The tap target is the tile itself (≥44px by template). */
+.visual-tile-box {
+  fill: #ffffff;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+.visual-tile-text {
+  font-size: 26px;
+  font-weight: 800;
+  fill: var(--text);
+}
+
+.visual-interactive.is-selected .visual-tile-box,
+.visual-interactive:focus-visible .visual-tile-box {
+  fill: rgba(59, 130, 246, 0.12);
+}
+
+/* The assembled word/sentence band reads slightly softer than tap units. */
+.visual-el:not(.visual-interactive) .visual-tile-box {
+  fill: rgba(238, 246, 255, 0.9);
+}
+
+.visual-el.is-active .visual-heat-line { animation: heat-flicker 1.6s ease-in-out infinite; }
+
+@keyframes heat-flicker {
+  0%, 100% { opacity: 0.4; transform: translateY(0); }
+  50% { opacity: 0.9; transform: translateY(-4px); }
+}
+
+/* Rising vapor during process steps */
+.visual-el.is-active.visual-vapor {
+  animation: vapor-rise 1.8s ease-in-out infinite;
+}
+
+@keyframes vapor-rise {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50% { transform: translateY(-10px); opacity: 0.95; }
+}
+
+.visual-text-alt {
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.visual-text-alt summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.visual-text-alt-body { margin: 8px 0 2px; font-size: 15px; line-height: 1.5; }
+
+/* Help panel visual toggle + mount point */
+.help-visual-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.help-visual-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.visual-toggle-btn {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 8px 18px;
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.visual-toggle-btn:hover { background: rgba(59, 130, 246, 0.08); }
+
+.help-visual-mount[hidden] { display: none; }
+
+/* ─── "Show me" scene mode: the modal transitions into the visual world ── */
+
+.help-panel.is-scene .help-panel-title,
+.help-panel.is-scene .help-options {
+  display: none;
+}
+
+.help-scene-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.help-scene-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.help-scene-mount .visual-stage {
+  max-height: 330px;
+}
+
+/* ─── Living-scene ambience: subtle, bounded, reduced-motion safe ───
+   Ambient motion is gated on .is-active so dimmed elements stay still.
+   The component's Motion toggle adds .motion-off to the frame, which
+   pauses ALL ambient animation (same contract as prefers-reduced-motion). */
+
+.visual-el.is-active.visual-droplet {
+  animation: droplet-jiggle 1.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.visual-el.is-active.visual-droplet + .visual-el.is-active.visual-droplet {
+  animation-delay: 0.35s;
+}
+
+.visual-el.is-active .visual-sun-core {
+  animation: sun-glow 2.8s ease-in-out infinite;
+}
+
+.visual-el.is-active.visual-plant-leaf,
+.visual-el.is-active.visual-plant-flower {
+  animation: leaf-sway 3.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.visual-el.is-active.visual-plant-flower { animation-duration: 4s; animation-delay: 0.6s; }
+
+@keyframes droplet-jiggle {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(1.5px, -1px); }
+  50% { transform: translate(-1.5px, 1px); }
+  75% { transform: translate(1px, 1.5px); }
+}
+
+@keyframes sun-glow {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(251, 191, 36, 0.5)); }
+  50% { filter: drop-shadow(0 0 9px rgba(251, 191, 36, 0.95)); }
+}
+
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(2.5deg); }
+}
+
+.visual-frame.motion-off .visual-el,
+.visual-frame.motion-off .visual-el .visual-sun-core,
+.visual-frame.motion-off .visual-el .visual-heat-line {
+  animation: none !important;
+}
+
+/* ─── Accessibility: Reduce Motion ───────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-btn:hover:not(:disabled),
+  .help-trigger:hover,
+  .tile-chip:hover:not(:disabled),
+  .help-option-btn:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .help-overlay,
+  .help-panel,
+  .break-emoji {
+    animation: none;
+  }
+
+  .visual-el.is-active .visual-heat-line,
+  .visual-el.is-active.visual-vapor,
+  .visual-el.is-active.visual-droplet,
+  .visual-el.is-active .visual-sun-core,
+  .visual-el.is-active.visual-plant-leaf,
+  .visual-el.is-active.visual-plant-flower {
+    animation: none;
+  }
+
+  .visual-el { transition: none; }
+}

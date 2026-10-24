@@ -1,0 +1,631 @@
+/**
+ * Learner-Facing UI Styles.
+ * Child-friendly layout built on dyslexia-accessible tokens.
+ *
+ * Motion guidelines:
+ *  - Subtle spring/bouncy micro-interactions only
+ *  - No continuous looping animation except idle breathing
+ *  - No harsh shake, flash, or red-error animation
+ *  - All motion is optional; honors prefers-reduced-motion
+ */
+
+/* ─── Layout ─────────────────────────────────────────────────────── */
+
+.learner-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--space-lg);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.learner-header {
+  margin-bottom: var(--space-xl);
+  text-align: center;
+}
+
+.learner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background-color: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-sm);
+}
+
+.learner-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 0 var(--space-sm) 0;
+  color: var(--color-text-primary);
+}
+
+.learner-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: var(--line-height-standard);
+  max-width: 620px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Avatar (decorative in Phase 4) */
+.learner-avatar {
+  font-size: 88px;
+  line-height: 1;
+  margin-bottom: var(--space-md);
+  display: inline-block;
+}
+
+/* ─── Cards ──────────────────────────────────────────────────────── */
+
+.learner-card {
+  background-color: var(--color-bg-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 20px;
+  padding: var(--space-xl);
+  width: 100%;
+  max-width: 700px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Task Prompt Card ───────────────────────────────────────────── */
+
+.task-prompt {
+  font-family: var(--font-family-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-primary);
+  margin: var(--space-md) 0 var(--space-xl) 0;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: break-word;
+}
+
+.task-category-badge {
+  display: inline-block;
+  background-color: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  padding: 4px 14px;
+  border-radius: 9999px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-sm);
+}
+
+/* ─── Answer Options ─────────────────────────────────────────────── */
+
+.option-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+@media (max-width: 640px) {
+  .option-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.option-btn {
+  min-height: var(--target-size-min);
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  border: 3px solid var(--color-border);
+  border-radius: var(--target-radius);
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.25s ease,
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+.option-btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  background-color: var(--color-bg-card);
+  transform: translateY(-2px);
+}
+
+.option-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.option-btn:focus-visible {
+  box-shadow: 0 0 0 var(--focus-ring-offset) rgba(59, 130, 246, 0.35);
+}
+
+.option-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+/* Feedback states — correct (green, seesaw bounce), incorrect (gentle neutral) */
+.option-btn.is-correct {
+  background-color: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success);
+  animation: option-correct-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.option-btn.is-incorrect {
+  background-color: var(--color-bg-card);
+  border-color: var(--color-border);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.option-btn.is-muted {
+  opacity: 0.45;
+}
+
+/* Outcome line under the activity — appears only once main has judged the
+   answer. Kind words, no scores. */
+.activity-feedback {
+  min-height: 1.4em;
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-text-primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.activity-feedback.is-visible {
+  opacity: 1;
+}
+
+@keyframes option-correct-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.06) translateY(-4px); }
+  70%  { transform: scale(0.98) translateY(1px); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Progress Bar ───────────────────────────────────────────────── */
+
+.quest-progress {
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: var(--space-md);
+}
+
+.quest-progress-track {
+  width: 100%;
+  height: 14px;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.quest-progress-fill {
+  height: 100%;
+  background-color: var(--color-accent);
+  border-radius: 9999px;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.quest-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: 6px;
+}
+
+/* Timer — visible but non-pressuring */
+.quest-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-sm);
+}
+
+.quest-timer.is-low {
+  color: var(--color-text-secondary);
+}
+
+/* ─── Button Row & Actions ───────────────────────────────────────── */
+
+.learner-button-row {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  align-items: center;
+  margin-top: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.learner-btn-primary {
+  min-height: var(--target-size-min);
+  padding: 0 var(--space-xl);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: #FFFFFF;
+  background-color: var(--color-accent);
+  border: none;
+  border-radius: var(--target-radius);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  outline: none;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+.learner-btn-primary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.learner-btn-primary:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.learner-btn-primary:focus-visible {
+  box-shadow: 0 0 0 var(--focus-ring-offset) rgba(59, 130, 246, 0.35);
+}
+
+.learner-btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ─── Completion / Celebration Screen ────────────────────────────── */
+
+.celebration-emoji {
+  font-size: 96px;
+  line-height: 1;
+  display: inline-block;
+  animation: celebration-bounce 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+@keyframes celebration-bounce {
+  0%   { transform: scale(0) rotate(-12deg); }
+  55%  { transform: scale(1.18) rotate(6deg); }
+  75%  { transform: scale(0.96) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* ─── Spring Entrance Animations ────────────────────────────────── */
+
+/* Task card entrance — gentle spring pop-in for each new question */
+.task-card-enter {
+  animation: task-card-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes task-card-pop {
+  0%   { opacity: 0; transform: scale(0.96) translateY(12px); }
+  60%  { opacity: 1; transform: scale(1.02) translateY(-3px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Option button stagger — each card springs in with increasing delay */
+.option-enter {
+  animation: option-spring-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes option-spring-in {
+  0%   { opacity: 0; transform: scale(0.92) translateY(8px); }
+  60%  { opacity: 1; transform: scale(1.03) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Progress label pop — brief bounce when question number updates */
+.progress-pop {
+  animation: progress-bump 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes progress-bump {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Completion card entrance */
+.celebration-card-enter {
+  animation: celebration-card-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+
+@keyframes celebration-card-pop {
+  0%   { opacity: 0; transform: scale(0.94) translateY(16px); }
+  55%  { opacity: 1; transform: scale(1.03) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Completion stat tiles — staggered spring pop */
+.celebration-stat-enter {
+  animation: stat-spring-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes stat-spring-in {
+  0%   { opacity: 0; transform: scale(0.88) translateY(10px); }
+  55%  { opacity: 1; transform: scale(1.04) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.celebration-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-sm);
+  margin: var(--space-lg) 0;
+  text-align: center;
+}
+
+.celebration-stat {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: var(--space-md);
+}
+
+.celebration-stat-value {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.celebration-stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+/* Gentle entry animation for screen switching */
+.screen-enter {
+  animation: screen-pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes screen-pop-in {
+  0%   { opacity: 0; transform: scale(0.97) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ─── My Day dashboard (Phase 7.1) ─────────────────────────────── */
+
+.myday-container {
+  justify-content: flex-start;
+  padding-top: var(--space-xl);
+  max-width: 860px;
+}
+
+.myday-header {
+  margin-bottom: var(--space-lg);
+}
+
+.myday-greeting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.myday-greeting-emoji {
+  font-size: var(--font-size-lg);
+  line-height: 1;
+}
+
+.myday-greeting .learner-title {
+  margin-bottom: 0;
+}
+
+.myday-sections {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-top: var(--space-md);
+}
+
+.myday-section {
+  text-align: left;
+}
+
+.myday-section-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.myday-section-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.myday-section-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.myday-card {
+  padding: var(--space-md);
+  box-shadow: none;
+}
+
+.myday-copy {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-standard);
+  margin: var(--space-xs) 0;
+}
+
+.myday-objective {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: var(--line-height-standard);
+  margin: var(--space-xs) 0 0 0;
+}
+
+.myday-actions {
+  margin-top: var(--space-md);
+}
+
+.myday-quickcheck {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.myday-badge-soon {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  padding: 4px 14px;
+  border-radius: 9999px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.myday-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.myday-empty-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.myday-empty .myday-copy {
+  margin: 0;
+}
+
+.myday-material-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.myday-material {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: var(--space-md);
+}
+
+.myday-material-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.myday-material-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+.myday-back-link {
+  margin-top: var(--space-lg);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  padding: var(--space-sm);
+  border-radius: var(--target-radius);
+  outline: none;
+}
+
+.myday-back-link:hover:not(:disabled) {
+  color: var(--color-accent);
+}
+
+.myday-back-link:focus-visible {
+  box-shadow: 0 0 0 var(--focus-ring-offset) rgba(59, 130, 246, 0.35);
+}
+
+/* ─── Accessibility: Reduce Motion ───────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .option-btn {
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .option-btn:hover:not(:disabled),
+  .option-btn:active:not(:disabled),
+  .learner-btn-primary:hover:not(:disabled),
+  .learner-btn-primary:active:not(:disabled) {
+    transform: none;
+  }
+
+  .option-btn.is-correct,
+  .celebration-emoji,
+  .screen-enter,
+  .quest-progress-fill,
+  .task-card-enter,
+  .option-enter,
+  .progress-pop,
+  .celebration-card-enter,
+  .celebration-stat-enter {
+    animation: none;
+  }
+
+  .option-enter {
+    animation: none;
+    opacity: 1;
+  }
+
+  .celebration-card-enter {
+    animation: none;
+    opacity: 1;
+  }
+
+  .celebration-stat-enter {
+    animation: none;
+    opacity: 1;
+  }
+}
