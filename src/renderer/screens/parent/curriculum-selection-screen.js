@@ -25,9 +25,19 @@ export function renderCurriculumSelectionScreen(container, { profile, onContinue
   function setContextDefaults() {
     const curriculum = currentCurriculum();
     if (!curriculum) return;
-    if (!curriculum.gradeLevels.some((g) => g.gradeId === gradeId)) {
+
+    // Auto-match curriculum grade to profile's canonical grade (no duplicate asking)
+    if (!gradeId && profile?.grade) {
+      const matchedGrade = curriculum.gradeLevels.find((g) => g.canonicalGrade === profile.grade);
+      if (matchedGrade) {
+        gradeId = matchedGrade.gradeId;
+      } else {
+        gradeId = curriculum.gradeLevels[0]?.gradeId || '';
+      }
+    } else if (!curriculum.gradeLevels.some((g) => g.gradeId === gradeId)) {
       gradeId = curriculum.gradeLevels[0]?.gradeId || '';
     }
+
     if (!curriculum.subjects.includes(subject)) {
       subject = curriculum.subjects[0] || '';
     }

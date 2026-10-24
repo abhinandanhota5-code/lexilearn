@@ -20,7 +20,6 @@ export const AVAILABLE_THEMES = [
 ];
 
 export const GRADE_LEVELS = [
-  'Kindergarten',
   '1st Grade',
   '2nd Grade',
   '3rd Grade',
