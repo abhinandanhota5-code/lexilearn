@@ -12,11 +12,11 @@ export const AVAILABLE_AVATARS = [
 ];
 
 export const AVAILABLE_THEMES = [
-  { id: 'warm-parchment', name: 'Warm Parchment', description: 'Soft cream tint that reduces glare', bg: '#FDFBF7' },
-  { id: 'soft-mint', name: 'Soft Mint', description: 'Gentle pale green for visual relaxation', bg: '#F4FAF6' },
-  { id: 'peach-glow', name: 'Peach Glow', description: 'Warm soothing tone for visual comfort', bg: '#FFF8F3' },
-  { id: 'soft-lavender', name: 'Soft Lavender', description: 'Muted purple tint to ease reading strain', bg: '#F9F7FD' },
-  { id: 'high-contrast', name: 'High Contrast', description: 'Crisp light text on a dark charcoal surface', bg: '#1A202C' }
+  { id: 'warm-parchment', name: 'Warm Parchment', description: 'Soft cream tint', bg: '#FDFBF7' },
+  { id: 'soft-mint', name: 'Soft Mint', description: 'Gentle pale green', bg: '#F4FAF6' },
+  { id: 'peach-glow', name: 'Peach Glow', description: 'Warm soothing tone', bg: '#FFF8F3' },
+  { id: 'soft-lavender', name: 'Soft Lavender', description: 'Muted purple tint', bg: '#F9F7FD' },
+  { id: 'high-contrast', name: 'High Contrast', description: 'Crisp light text on dark surface', bg: '#1A202C' }
 ];
 
 export const GRADE_LEVELS = [

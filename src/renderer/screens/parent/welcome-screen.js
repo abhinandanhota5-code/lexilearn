@@ -8,9 +8,9 @@ export function renderWelcomeScreen(container, { onContinue }) {
     <div class="parent-container">
       <div class="parent-header">
         <span class="parent-badge">Step 1 of 2 • Parent Gateway</span>
-        <h1 class="parent-title">Welcome to LumiLearn 👋</h1>
+        <h1 class="parent-title">Welcome to OnYou 👋</h1>
         <p class="parent-subtitle">
-          An assistive desktop learning environment tailored for children with dyslexia and language-based learning differences.
+          An adaptive AI platform that learns your preferences and adjusts to support your goals.
         </p>
       </div>
 
@@ -18,7 +18,7 @@ export function renderWelcomeScreen(container, { onContinue }) {
         <div class="alert-banner" style="background-color: var(--color-bg-card); border: 1px solid var(--color-border);">
           <span style="font-size: 28px;">🛡️</span>
           <div>
-            <strong>100% Local & Private:</strong> All educational notes and learning observations are stored safely on this computer. No data is sent to external cloud servers.
+            <strong>100% Local & Private:</strong> All your data and activity logs are stored safely on this computer. No data is sent to external cloud servers.
           </div>
         </div>
 
@@ -33,11 +33,11 @@ export function renderWelcomeScreen(container, { onContinue }) {
                 required
               />
               <label for="disclaimer-checkbox" class="disclaimer-text">
-                I understand that LexiLearn provides supportive <strong>educational accommodations and learning observations</strong>. It is designed to assist reading comfort and does <strong>not</strong> provide a medical diagnosis or clinical evaluation.
+                I understand that OnYou is an adaptive platform that personalizes based on my usage patterns. It helps me work more effectively and does <strong>not</strong> provide medical or clinical advice.
               </label>
             </div>
             <div id="disclaimer-error" class="field-error" style="display: none;">
-              ⚠️ Please confirm you have read and agreed to the educational disclaimer.
+              ⚠️ Please confirm you have read and agreed to the disclaimer.
             </div>
           </div>
 
