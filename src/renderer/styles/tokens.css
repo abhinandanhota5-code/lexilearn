@@ -23,7 +23,8 @@
   --color-bg-card: #F7F3EB;
   --color-text-primary: #2D3748;
   --color-text-secondary: #4A5568;
-  --color-border: #E2D9CC;
+  --color-border: #D4C4B0;
+  --color-border-subtle: #E8DFD0;
   --color-accent: #3B82F6;
   --color-accent-hover: #2563EB;
   --color-error: #DC2626;
@@ -67,7 +68,17 @@
   /* Focus & Accessibility */
   --focus-ring-color: #2563EB;
   --focus-ring-width: 4px;
-  --focus-ring-offset: 4px;
+  --focus-ring-offset: 2px;
+
+  /* Typography Scale */
+  --font-size-h1: 40px;
+  --font-size-h2: 32px;
+  --font-size-h3: 28px;
+  --font-size-h4: 24px;
+  --font-size-body-large: 22px;
+  --font-size-body-normal: 18px;
+  --font-size-body-small: 16px;
+  --font-size-caption: 14px;
 
   /* Spacing */
   --space-xs: 8px;
