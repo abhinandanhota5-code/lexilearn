@@ -68,8 +68,10 @@ export function renderLearningActivityScreen(container, {
   const progressPct = Math.min(100, Math.round((completedCount / Math.max(1, goalActivities)) * 100));
   const mode = plan.mode === 'build' ? 'build' : 'choose';
   const presentation = plan.presentation || { mode: 'text', replayEnabled: false };
-  const audioPrompt = presentation.audioPrompt || plan.content?.audioPrompt || null;
-  const tts = presentation.replayEnabled && audioPrompt ? new WebSpeechTTSService({ rate: presentation.ttsRate ?? 0.85 }) : null;
+
+  // ALWAYS create TTS service — speak the visible question text
+  const tts = new WebSpeechTTSService({ rate: presentation.ttsRate ?? 0.85 });
+  const audioPrompt = presentation.audioPrompt || plan.content?.audioPrompt || plan.prompt || plan.content?.prompt || '';
 
   const audioSignals = {
     audioUsed: false,
@@ -108,8 +110,8 @@ export function renderLearningActivityScreen(container, {
 
   const supportRow = `
     <div class="activity-support-row">
-      ${tts ? `<button type="button" class="audio-btn" id="audio-btn" aria-label="Read this aloud">🔊 Listen</button>` : ''}
-      ${tts ? `<button type="button" class="audio-btn" id="replay-btn" aria-label="Read again">🔁 Again</button>` : ''}
+      <button type="button" class="audio-btn" id="audio-btn" aria-label="Read this aloud">🔊 Listen</button>
+      <button type="button" class="audio-btn" id="replay-btn" aria-label="Read again">🔁 Again</button>
       <button type="button" class="help-trigger" id="help-trigger-btn">I don't understand 💙</button>
     </div>
   `;
