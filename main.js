@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import pkg from 'electron';
+const { app, BrowserWindow, ipcMain, dialog } = pkg;
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { IPC_CHANNELS } from './src/shared/ipc-channels.js';
@@ -52,6 +53,14 @@ import {
   finishSchoolworkReading,
   clearSchoolworkSession
 } from './src/services/learning/schoolwork-session.js';
+import {
+  queueProposal,
+  recordDecision,
+  getApprovedProposals,
+  getPendingProposals,
+  cleanupProposal,
+  createProposal
+} from './src/services/adaptive/approval-gate.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -585,6 +594,54 @@ function registerIpcHandlers() {
         materialStore: curriculumStore,
         registry: curriculumRegistry
       });
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // Personalization Engine: Approval Gate (MVP Hackathon)
+  ipcMain.handle(IPC_CHANNELS.PE_GET_PENDING_PROPOSALS, async (_event, learnerId) => {
+    try {
+      const proposals = getPendingProposals(learnerId);
+      return { success: true, proposals };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.PE_SUBMIT_APPROVAL, async (_event, { proposalId, approved }) => {
+    try {
+      const decision = recordDecision(proposalId, approved);
+      if (!decision.success) {
+        return decision;
+      }
+
+      if (approved) {
+        // Get profile, apply approved proposals, persist
+        const profile = await profileStore.getProfile();
+        if (!profile) {
+          return { success: false, error: 'profile_not_found' };
+        }
+
+        // Apply the approved change
+        const approvedList = getApprovedProposals(profile.learnerId);
+        for (const prop of approvedList) {
+          if (prop.proposalId === proposalId) {
+            profile.adaptiveLearning.preferences.weights[prop.modality] = prop.newWeight;
+            profile.adaptiveLearning.preferences.updatedAt = new Date().toISOString();
+          }
+        }
+
+        // Persist updated profile
+        await profileStore.saveProfile(profile);
+        cleanupProposal(proposalId);
+
+        return { success: true, persisted: true };
+      } else {
+        // Declined: just clean up without persisting
+        cleanupProposal(proposalId);
+        return { success: true, persisted: false };
+      }
     } catch (err) {
       return { success: false, error: err.message };
     }

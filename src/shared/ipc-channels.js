@@ -66,5 +66,9 @@ export const IPC_CHANNELS = {
 
   // Adaptation & Telemetry Feedback (Reserved for Phase 9+)
   FEEDBACK_SUBMIT_SESSION: 'feedback:submit-session',
-  AI_GENERATE_DIGEST: 'ai:generate-digest'
+  AI_GENERATE_DIGEST: 'ai:generate-digest',
+
+  // Personalization Engine — Approval Workflow (MVP Hackathon)
+  PE_GET_PENDING_PROPOSALS: 'pe:get-pending-proposals',
+  PE_SUBMIT_APPROVAL: 'pe:submit-approval'
 };
