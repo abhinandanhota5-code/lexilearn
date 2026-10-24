@@ -8,9 +8,9 @@ export function renderWelcomeScreen(container, { onContinue }) {
     <div class="parent-container">
       <div class="parent-header">
         <span class="parent-badge">Step 1 of 2 • Parent Gateway</span>
-        <h1 class="parent-title">Welcome to OnYou 👋</h1>
+        <h1 class="parent-title">Welcome to LexiLearn 👋</h1>
         <p class="parent-subtitle">
-          An adaptive AI platform that learns your preferences and adjusts to support your goals.
+          A personalized learning companion for children with dyslexia. All your data and activity logs are stored safely on this computer.
         </p>
       </div>
 
@@ -33,7 +33,7 @@ export function renderWelcomeScreen(container, { onContinue }) {
                 required
               />
               <label for="disclaimer-checkbox" class="disclaimer-text">
-                I understand that OnYou is an adaptive platform that personalizes based on my usage patterns. It helps me work more effectively and does <strong>not</strong> provide medical or clinical advice.
+                I understand that LexiLearn is a personalized learning companion for children with dyslexia. It helps learners with reading and does <strong>not</strong> provide medical or clinical advice.
               </label>
             </div>
             <div id="disclaimer-error" class="field-error" style="display: none;">

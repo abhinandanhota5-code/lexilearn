@@ -226,7 +226,7 @@ async function initApp() {
    * it never influences scoring or the quest sequence.
    */
   function startScreeningFlow(profile) {
-    console.debug('LumiLearn Phase 1 DX: startScreeningFlow invoked', { learnerId: profile?.learnerId, name: profile?.name });
+    console.debug('LexiLearn Phase 1 DX: startScreeningFlow invoked', { learnerId: profile?.learnerId, name: profile?.name });
     const { tasks: questTasks } = selectQuestTasks(profile);
     const results = [];
     const usedTaskIds = new Set();
@@ -286,10 +286,10 @@ async function initApp() {
       }
     }
 
-    console.info('LumiLearn Phase 1: about to render Quest Intro screen');
+    console.info('LexiLearn Phase 1: about to render Quest Intro screen');
     console.info('Phase1-DX: About to render Quest Intro screen (startScreeningFlow)');
     console.info('Phase1-DX: Quest Intro render cycle start (startScreeningFlow)');
-    console.trace('LumiLearn: trace startScreeningFlow render Quest Intro');
+    console.trace('LexiLearn: trace startScreeningFlow render Quest Intro');
     renderQuestIntroScreen(root, {
       profile,
       onStart: () => {

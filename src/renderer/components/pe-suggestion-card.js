@@ -32,7 +32,7 @@ export function renderPESuggestionCard(container, options = {}) {
   // Card content
   card.innerHTML = `
     <div class="pe-card-header">
-      <h3 class="pe-card-title">✨ OnYou noticed a pattern</h3>
+      <h3 class="pe-card-title">✨ LexiLearn noticed a pattern</h3>
     </div>
 
     <div class="pe-card-body">

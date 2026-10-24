@@ -9,7 +9,7 @@ let __questIntroRenderCount = 0;
 
 export function renderQuestIntroScreen(container, { profile, onStart }) {
   __questIntroRenderCount++;
-  console.debug('OnYou: renderQuestIntroScreen', __questIntroRenderCount);
+  console.debug('LexiLearn: renderQuestIntroScreen', __questIntroRenderCount);
   const avatar = AVAILABLE_AVATARS.find(a => a.id === profile?.avatar) || { emoji: '🌟', label: 'Star' };
   const firstName = profile?.name?.split(' ')[0] || 'friend';
 
@@ -17,7 +17,7 @@ export function renderQuestIntroScreen(container, { profile, onStart }) {
     <div class="learner-container">
       <div class="learner-header">
         <span class="learner-badge">Activity Quest • Let's Begin</span>
-        <h1 class="learner-title">Hi ${firstName}! Welcome to OnYou ✨</h1>
+        <h1 class="learner-title">Hi ${firstName}! Welcome to LexiLearn ✨</h1>
         <p class="learner-subtitle">
           We're going to work through some fun activities together.
           ${avatar.label} will come along and cheer for you!
@@ -48,7 +48,7 @@ export function renderQuestIntroScreen(container, { profile, onStart }) {
   `;
 
   container.innerHTML = newHtml;
-  console.debug('OnYou: QuestIntro rendered');
+  console.debug('LexiLearn: QuestIntro rendered');
 
   const startBtn = container.querySelector('#quest-start-btn');
   startBtn.addEventListener('click', () => {
