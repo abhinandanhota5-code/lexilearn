@@ -31,9 +31,12 @@ async function initApp() {
     return;
   }
 
+  console.log('🚀 LexiLearn app initializing...');
+
   // Load existing profile from Electron storage via secure IPC bridge
   try {
     const existingProfile = await window.electronAPI.getProfile();
+    console.log('📋 Profile loaded:', existingProfile?.name, 'Status:', existingProfile?.screeningStatus);
 
     // Apply the learner's saved reading/presentation preferences BEFORE any
     // screen renders, so the first paint already uses their chosen typography.
@@ -42,11 +45,14 @@ async function initApp() {
     if (existingProfile && existingProfile.name) {
       // Route: if screening not yet completed, offer the screening quest
       if (existingProfile.screeningStatus === 'completed') {
+        console.log('✅ Screening complete → showing profile overview');
         showProfileOverview(existingProfile);
       } else {
+        console.log('⏳ Screening pending → starting screening flow');
         startScreeningFlow(existingProfile);
       }
     } else {
+      console.log('🆕 No profile found → starting setup flow');
       startSetupFlow();
     }
   } catch (err) {

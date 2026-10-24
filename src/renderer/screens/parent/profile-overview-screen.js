@@ -56,6 +56,9 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
 
   container.innerHTML = `
     <div class="parent-container">
+      <!-- BUILD VERIFICATION MARKER - VISIBLE IMMEDIATELY -->
+      <div style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #FF6B6B; color: white; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 9999;">✓ BUILD v2024-10-24-FRESH</div>
+
       <div class="parent-header">
         <span class="parent-badge">Learner Profile Active</span>
         <h1 class="parent-title">Welcome back, ${profile.name}! 👋</h1>
