@@ -67,10 +67,37 @@ async function initApp() {
           onBack: () => showProfileOverview(prof)
         });
       },
+      onParentDashboard: (prof) => {
+        renderParentDashboardScreen(root, {
+          profile: prof,
+          onEditProfile: (p) => {
+            renderLearnerBasicsScreen(root, {
+              existingProfile: p,
+              onSaved: (saved) => {
+                applyPresentationSettings(saved?.accommodations);
+                renderParentDashboardScreen(root, {
+                  profile: saved,
+                  onEditProfile: arguments.callee,
+                  onBackToProfile: () => showProfileOverview(saved),
+                  onAccessibilitySettings: () => showProfileOverview(saved),
+                  onStartLearning: (p2) => startDailyDashboard(p2)
+                });
+              },
+              onBack: () => renderParentDashboardScreen(root, {
+                profile: p,
+                onEditProfile: arguments.callee,
+                onBackToProfile: () => showProfileOverview(p),
+                onAccessibilitySettings: () => showProfileOverview(p),
+                onStartLearning: (p2) => startDailyDashboard(p2)
+              })
+            });
+          },
+          onBackToProfile: () => showProfileOverview(prof),
+          onAccessibilitySettings: () => showProfileOverview(prof),
+          onStartLearning: (p) => startDailyDashboard(p)
+        });
+      },
       onUploadDocument: (prof) => {
-        // After the parent CONFIRMS the IEP review (verified data), route into
-        // curriculum + school-material setup (Phase 6 Step 1). Skipping or
-        // backing out of the upload flow goes straight back to the overview.
         startDocumentFlow(prof, (finalProfile) => {
           startCurriculumSetupFlow(finalProfile, () => showProfileOverview(finalProfile));
         }, { afterConfirmOnly: true });

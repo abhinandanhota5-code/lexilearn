@@ -142,6 +142,9 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
 
         <div class="profile-action-grid">
           <div class="profile-action-col profile-action-col-left">
+            <button type="button" class="btn-secondary" id="parent-dashboard-btn">
+              📊 Parent Dashboard
+            </button>
             <button type="button" class="btn-secondary btn-danger" id="reset-profile-btn">
               🗑️ Reset Profile
             </button>
@@ -161,6 +164,14 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
   container.querySelector('#edit-profile-btn').addEventListener('click', () => {
     onEditProfile(profile);
   });
+
+  // Parent Dashboard Handler
+  const dashboardBtn = container.querySelector('#parent-dashboard-btn');
+  if (dashboardBtn && onParentDashboard) {
+    dashboardBtn.addEventListener('click', () => {
+      onParentDashboard(profile);
+    });
+  }
 
   // Document Upload / Update Handlers
   const uploadBtn = container.querySelector('#upload-new-doc-btn') || container.querySelector('#update-doc-btn');
