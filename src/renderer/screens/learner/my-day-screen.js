@@ -7,12 +7,15 @@
  *                 each item can hand off to its assignment session
  *  - Today's Practice  one card that hands off to the existing ALE mission
  *                      flow (the ALE decides the plan on entry)
- *  - Quick Check  interface-only placeholder (engine arrives in a later phase)
+ *  - Quick Check  Personalization Engine suggestions (if any pending)
  *
  * Everything rendered comes from the main-side view model —
  * nothing is invented here. Copy is kid-safe: no scores, no streaks,
  * no difficulty tiers, no percentages.
  */
+
+import { renderPESuggestionCard, showPESuccessState, showPEDismissalState } from '../../components/pe-suggestion-card.js';
+import { peIntegration } from '../../services/pe-integration.js';
 
 const QUICK_CHECK_COPY = {
   title: 'Quick Check',
@@ -112,8 +115,8 @@ export function renderMyDayScreen(container, {
             <span class="myday-section-emoji">💡</span>
             <h2 class="myday-section-title">${escapeHtml(quickCheck.title || QUICK_CHECK_COPY.title)}</h2>
           </div>
-          <div class="learner-card myday-card myday-quickcheck">
-            <span class="myday-badge-soon">Coming soon</span>
+          <div class="learner-card myday-card myday-quickcheck" id="pe-suggestions-container">
+            <span class="myday-badge-soon">Loading suggestions…</span>
             <p class="myday-copy">${escapeHtml(QUICK_CHECK_COPY.subtitle)}</p>
           </div>
         </section>
@@ -136,6 +139,9 @@ export function renderMyDayScreen(container, {
   if (backBtn && onBackToProfile) {
     backBtn.addEventListener('click', () => onBackToProfile());
   }
+
+  // Load and display PE suggestions
+  loadPESuggestions(container, profile);
 }
 
 function renderSchoolwork(schoolwork) {
@@ -182,4 +188,86 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+/**
+ * Load and display PE suggestions in the Quick Check section
+ */
+async function loadPESuggestions(container, profile) {
+  const suggestionsContainer = container.querySelector('#pe-suggestions-container');
+  if (!suggestionsContainer) return;
+
+  try {
+    const learnerId = profile?.learnerId;
+    if (!learnerId) {
+      console.warn('[My Day] No learner ID available for PE suggestions');
+      return;
+    }
+
+    // Fetch pending proposals
+    const proposals = await peIntegration.getPendingProposals(learnerId);
+
+    if (proposals && proposals.length > 0) {
+      // Clear loading state and show first proposal
+      suggestionsContainer.innerHTML = '';
+      const firstProposal = proposals[0];
+
+      renderPESuggestionCard(suggestionsContainer, {
+        proposal: firstProposal,
+        onAccept: async (proposalId) => {
+          await handlePEAccept(suggestionsContainer, proposalId);
+        },
+        onDismiss: async (proposalId) => {
+          await handlePEDismiss(suggestionsContainer, proposalId);
+        }
+      });
+    } else {
+      // No proposals—show default message
+      suggestionsContainer.innerHTML = `
+        <span class="myday-badge-soon">Coming soon</span>
+        <p class="myday-copy">${escapeHtml(QUICK_CHECK_COPY.subtitle)}</p>
+      `;
+    }
+  } catch (err) {
+    console.error('[My Day] Error loading PE suggestions:', err);
+    // Silently fall back to default state
+    suggestionsContainer.innerHTML = `
+      <span class="myday-badge-soon">Coming soon</span>
+      <p class="myday-copy">${escapeHtml(QUICK_CHECK_COPY.subtitle)}</p>
+    `;
+  }
+}
+
+/**
+ * Handle PE suggestion acceptance
+ */
+async function handlePEAccept(container, proposalId) {
+  try {
+    const result = await peIntegration.handleAccept(proposalId);
+    if (result.success) {
+      showPESuccessState(container);
+    } else {
+      container.innerHTML = `<p style="color: var(--color-text-secondary);">Unable to update preference. Try again later.</p>`;
+    }
+  } catch (err) {
+    console.error('[My Day PE] Accept error:', err);
+    container.innerHTML = `<p style="color: var(--color-text-secondary);">An error occurred. Please try again.</p>`;
+  }
+}
+
+/**
+ * Handle PE suggestion dismissal
+ */
+async function handlePEDismiss(container, proposalId) {
+  try {
+    const result = await peIntegration.handleDismiss(proposalId);
+    if (result.success) {
+      showPEDismissalState(container);
+    } else {
+      container.innerHTML = `<p style="color: var(--color-text-secondary);">Unable to dismiss. Try again later.</p>`;
+    }
+  } catch (err) {
+    console.error('[My Day PE] Dismiss error:', err);
+    container.innerHTML = `<p style="color: var(--color-text-secondary);">An error occurred. Please try again.</p>`;
+  }
 }
