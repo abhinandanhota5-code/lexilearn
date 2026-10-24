@@ -1,46 +1,42 @@
 /**
- * Learner Screen M0: My Day — daily dashboard (Phase 7.1, Phase 7.2)
+ * Learner Screen M0: My Day — Child-Friendly Home Screen
  *
- * Kid-facing daily home: greeting + three sections.
- *  - Schoolwork   verified SCHOOLWORK records the parent created for this
- *                 child (Phase 7.2: school materials are never auto-tasks);
- *                 each item can hand off to its assignment session
- *  - Today's Practice  one card that hands off to the existing ALE mission
- *                      flow (the ALE decides the plan on entry)
- *  - Quick Check  Personalization Engine suggestions (if any pending)
- *
- * Everything rendered comes from the main-side view model —
- * nothing is invented here. Copy is kid-safe: no scores, no streaks,
- * no difficulty tiers, no percentages.
+ * REDESIGN FOR JUDGES' FEEDBACK:
+ * - NOT data-centric (no metrics, percentages, activity counts)
+ * - Mission-based ("What's next?")
+ * - Purposeful emojis, warm language
+ * - ONE clear primary action
+ * - Optional secondary actions (schoolwork, quick check)
+ * - Simple and engaging, not overwhelming
  */
 
 import { renderPESuggestionCard, showPESuccessState, showPEDismissalState } from '../../components/pe-suggestion-card.js';
 import { peIntegration } from '../../services/pe-integration.js';
 
-const QUICK_CHECK_COPY = {
-  title: 'Quick Check',
-  subtitle: 'A gentle check-in is coming soon — this space grows as it is built.'
-};
-
-const PRACTICE_COPY = {
+const MISSION_MESSAGES = {
   ready: {
-    title: 'Today\u2019s Practice',
-    subtitle: 'A reading mission is ready for you.',
-    action: 'Start My Mission! \u{1F680}'
+    emoji: '🚀',
+    heading: 'Your Next Mission',
+    subtitle: 'A fun reading adventure is waiting for you!',
+    button: 'Start Mission →'
   },
   continue: {
-    title: 'Today\u2019s Practice',
-    subtitle: 'You are in the middle of a reading mission \u2014 keep going!',
-    action: 'Keep Going! \u{1F680}'
+    emoji: '🎯',
+    heading: 'Keep Going!',
+    subtitle: 'You\'re doing great. Let\'s continue your mission.',
+    button: 'Continue →'
   },
   empty: {
-    title: 'Today\u2019s Practice',
-    subtitle: 'There is no practice ready for you right now. Check back soon!'
+    emoji: '⭐',
+    heading: 'All Caught Up!',
+    subtitle: 'Check back later for your next adventure.',
+    button: null
   },
   done_today: {
-    title: 'Today\u2019s Practice',
-    subtitle: 'You finished today\u2019s practice. Great exploring! \u{1F389}',
-    action: 'All Done \u{1F44B}'
+    emoji: '🎉',
+    heading: 'Amazing Work Today!',
+    subtitle: 'You\'ve completed your mission. Great job! 🌟',
+    button: null
   }
 };
 
@@ -52,131 +48,100 @@ export function renderMyDayScreen(container, {
   onBackToProfile
 }) {
   const greeting = dashboard?.greeting || { text: 'Hello!', emoji: '🌟' };
-  const schoolwork = dashboard?.schoolwork || { availability: 'unavailable', items: [] };
   const practice = dashboard?.practice || { availability: 'ready' };
-  const quickCheck = dashboard?.quickCheck || { availability: 'coming_soon' };
+  const schoolwork = dashboard?.schoolwork || { availability: 'unavailable', items: [] };
 
-  const schoolworkHtml = renderSchoolwork(schoolwork);
-  const practiceCopy = PRACTICE_COPY[practice.availability] || PRACTICE_COPY.empty;
-  const showPracticeCta = practice.availability === 'ready' || practice.availability === 'continue';
-  const practiceEmpty = practice.availability === 'empty';
-  const practiceSubtitle = practiceCopy.subtitle || '';
+  const missionData = MISSION_MESSAGES[practice.availability] || MISSION_MESSAGES.empty;
+  const showMissionBtn = practice.availability === 'ready' || practice.availability === 'continue';
+  const hasSchoolwork = schoolwork.availability === 'ready' && schoolwork.items && schoolwork.items.length > 0;
 
-  const schoolworkLabel = schoolwork.availability === 'ready'
-    ? `${schoolwork.items.length} schoolwork item${schoolwork.items.length === 1 ? '' : 's'}`
-    : 'Schoolwork';
-
-  container.innerHTML = `
+  // Build HTML
+  let html = `
     <div class="learner-container myday-container screen-enter">
-      <div class="learner-header myday-header">
-        <span class="learner-badge">My Day</span>
-        <div class="myday-greeting">
+      <!-- Warm Greeting -->
+      <div class="myday-header">
+        <div class="myday-greeting-area">
           <span class="myday-greeting-emoji">${escapeHtml(greeting.emoji)}</span>
           <h1 class="learner-title">${escapeHtml(greeting.text)}</h1>
         </div>
-        <p class="learner-subtitle">
-          Here is what is waiting for you today.
-        </p>
+        <p class="learner-subtitle">What would you like to do today?</p>
       </div>
 
-      <div class="myday-sections">
-        <section class="myday-section" aria-label="Schoolwork">
-          <div class="myday-section-heading">
-            <span class="myday-section-emoji">📚</span>
-            <h2 class="myday-section-title">${escapeHtml(schoolworkLabel)}</h2>
-          </div>
-          <div class="learner-card myday-card">
-            ${schoolworkHtml}
-          </div>
-        </section>
-
-        <section class="myday-section" aria-label="Today's practice">
-          <div class="myday-section-heading">
-            <span class="myday-section-emoji">🎯</span>
-            <h2 class="myday-section-title">${escapeHtml(practiceCopy.title)}</h2>
-          </div>
-          <div class="learner-card myday-card task-card-enter">
-            <p class="myday-copy">${escapeHtml(practiceSubtitle)}</p>
-            ${practice.objectiveTitle && !practiceEmpty ? `<p class="myday-objective">${escapeHtml(practice.objectiveTitle)}</p>` : ''}
-            <div class="learner-button-row myday-actions">
-              ${
-                practice.availability === 'done_today'
-                  ? `<button type="button" class="learner-btn-primary" id="myday-practice-done" disabled>${escapeHtml(practiceCopy.action)}</button>`
-                  : showPracticeCta
-                    ? `<button type="button" class="learner-btn-primary" id="myday-practice-btn">${escapeHtml(practiceCopy.action)}</button>`
-                    : ''
-              }
-            </div>
-          </div>
-        </section>
-
-        <section class="myday-section" aria-label="Quick Check">
-          <div class="myday-section-heading">
-            <span class="myday-section-emoji">💡</span>
-            <h2 class="myday-section-title">${escapeHtml(quickCheck.title || QUICK_CHECK_COPY.title)}</h2>
-          </div>
-          <div class="learner-card myday-card myday-quickcheck" id="pe-suggestions-container">
-            <span class="myday-badge-soon">Loading suggestions…</span>
-            <p class="myday-copy">${escapeHtml(QUICK_CHECK_COPY.subtitle)}</p>
-          </div>
-        </section>
+      <!-- PRIMARY: Mission Card (always focal point) -->
+      <div class="myday-main-card task-card-enter">
+        <div class="myday-mission-icon">${missionData.emoji}</div>
+        <h2 class="myday-mission-heading">${missionData.heading}</h2>
+        <p class="myday-mission-subtitle">${missionData.subtitle}</p>
+        ${showMissionBtn ? `
+          <button type="button" class="learner-btn-primary" id="myday-practice-btn">
+            ${missionData.button}
+          </button>
+        ` : ''}
       </div>
+  `;
 
-      <button type="button" class="myday-back-link" id="myday-back-btn" aria-label="Back to profile">
-        ← Back to profile
-      </button>
+  // Optional: Schoolwork section
+  if (hasSchoolwork) {
+    html += `
+      <div class="myday-secondary-section">
+        <h3 class="myday-section-title">📖 Your Schoolwork</h3>
+        <div class="myday-schoolwork-list" id="myday-schoolwork-container">
+          ${renderSchoolworkList(schoolwork.items)}
+        </div>
+      </div>
+    `;
+  }
+
+  // Quick Check / PE Suggestions (low priority, async)
+  html += `
+      <div id="pe-suggestions-container" style="display: none;"></div>
+      <button type="button" class="myday-settings-link" id="myday-back-btn">⚙️ Settings</button>
     </div>
   `;
 
+  container.innerHTML = html;
+
+  // Wire event handlers
   const practiceBtn = container.querySelector('#myday-practice-btn');
   if (practiceBtn && onStartPractice) {
     practiceBtn.addEventListener('click', () => onStartPractice());
   }
 
-  bindSchoolworkActions(container, onStartSchoolwork);
-
-  const backBtn = container.querySelector('#myday-back-btn');
-  if (backBtn && onBackToProfile) {
-    backBtn.addEventListener('click', () => onBackToProfile());
+  if (hasSchoolwork) {
+    wireSchoolworkButtons(container, onStartSchoolwork);
   }
 
-  // Load and display PE suggestions
+  const settingsBtn = container.querySelector('#myday-back-btn');
+  if (settingsBtn && onBackToProfile) {
+    settingsBtn.addEventListener('click', () => onBackToProfile());
+  }
+
+  // Load PE suggestions async (low priority)
   loadPESuggestions(container, profile);
 }
 
-function renderSchoolwork(schoolwork) {
-  if (schoolwork.availability === 'empty') {
-    return `
-      <div class="myday-empty">
-        <span class="myday-empty-emoji">🗂️</span>
-        <p class="myday-copy">${escapeHtml(schoolwork.note || 'No schoolwork set up yet.')}</p>
+function renderSchoolworkList(items) {
+  if (!items || items.length === 0) return '<p class="myday-empty-text">No schoolwork assigned yet.</p>';
+
+  return items.map((item, idx) => `
+    <div class="myday-schoolwork-item" style="animation-delay: ${idx * 0.05}s;">
+      <div>
+        <div class="myday-item-title">${escapeHtml(item.title)}</div>
+        <div class="myday-item-meta">${escapeHtml(item.subject || 'Assignment')}</div>
       </div>
-    `;
-  }
-  if (schoolwork.availability === 'unavailable' || schoolwork.items.length === 0) {
-    return `
-      <div class="myday-empty">
-        <span class="myday-empty-emoji">🗂️</span>
-        <p class="myday-copy">Schoolwork is not available right now. Check again later.</p>
-      </div>
-    `;
-  }
-  const items = schoolwork.items.map((m, i) => `
-    <div class="myday-material">
-      <div class="myday-material-title">${escapeHtml(m.title)}</div>
-      <div class="myday-material-meta">${[m.assignmentLabel, m.subject].filter(Boolean).map(escapeHtml).join(' • ')}${m.dueCopy ? ` • ${escapeHtml(m.dueCopy)}` : ''}</div>
-      <button type="button" class="myday-material-start" data-schoolwork-id="${escapeHtml(m.schoolworkId)}" style="animation-delay: ${i * 0.05}s;">Start</button>
+      <button type="button" class="myday-item-btn" data-schoolwork-id="${escapeHtml(item.schoolworkId)}">
+        Start
+      </button>
     </div>
   `).join('');
-  return `<div class="myday-material-list">${items}</div>`;
 }
 
-function bindSchoolworkActions(container, onStartSchoolwork) {
+function wireSchoolworkButtons(container, onStartSchoolwork) {
   if (!onStartSchoolwork) return;
-  [...container.querySelectorAll('.myday-material-start')].forEach((btn) => {
+  container.querySelectorAll('.myday-item-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const schoolworkId = btn.getAttribute('data-schoolwork-id');
-      if (schoolworkId) onStartSchoolwork(schoolworkId);
+      const id = btn.getAttribute('data-schoolwork-id');
+      if (id) onStartSchoolwork(id);
     });
   });
 }
@@ -190,84 +155,28 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
-/**
- * Load and display PE suggestions in the Quick Check section
- */
 async function loadPESuggestions(container, profile) {
   const suggestionsContainer = container.querySelector('#pe-suggestions-container');
-  if (!suggestionsContainer) return;
+  if (!suggestionsContainer || !profile?.learnerId) return;
 
   try {
-    const learnerId = profile?.learnerId;
-    if (!learnerId) {
-      console.warn('[My Day] No learner ID available for PE suggestions');
-      return;
-    }
-
-    // Fetch pending proposals
-    const proposals = await peIntegration.getPendingProposals(learnerId);
-
+    const proposals = await peIntegration.getPendingProposals(profile.learnerId);
     if (proposals && proposals.length > 0) {
-      // Clear loading state and show first proposal
+      suggestionsContainer.style.display = 'block';
       suggestionsContainer.innerHTML = '';
-      const firstProposal = proposals[0];
-
       renderPESuggestionCard(suggestionsContainer, {
-        proposal: firstProposal,
-        onAccept: async (proposalId) => {
-          await handlePEAccept(suggestionsContainer, proposalId);
+        proposal: proposals[0],
+        onAccept: async (id) => {
+          const result = await peIntegration.handleAccept(id);
+          if (result.success) showPESuccessState(suggestionsContainer);
         },
-        onDismiss: async (proposalId) => {
-          await handlePEDismiss(suggestionsContainer, proposalId);
+        onDismiss: async (id) => {
+          const result = await peIntegration.handleDismiss(id);
+          if (result.success) showPEDismissalState(suggestionsContainer);
         }
       });
-    } else {
-      // No proposals—show default message
-      suggestionsContainer.innerHTML = `
-        <span class="myday-badge-soon">Coming soon</span>
-        <p class="myday-copy">${escapeHtml(QUICK_CHECK_COPY.subtitle)}</p>
-      `;
     }
   } catch (err) {
-    console.error('[My Day] Error loading PE suggestions:', err);
-    // Silently fall back to default state
-    suggestionsContainer.innerHTML = `
-      <span class="myday-badge-soon">Coming soon</span>
-      <p class="myday-copy">${escapeHtml(QUICK_CHECK_COPY.subtitle)}</p>
-    `;
-  }
-}
-
-/**
- * Handle PE suggestion acceptance
- */
-async function handlePEAccept(container, proposalId) {
-  try {
-    const result = await peIntegration.handleAccept(proposalId);
-    if (result.success) {
-      showPESuccessState(container);
-    } else {
-      container.innerHTML = `<p style="color: var(--color-text-secondary);">Unable to update preference. Try again later.</p>`;
-    }
-  } catch (err) {
-    console.error('[My Day PE] Accept error:', err);
-    container.innerHTML = `<p style="color: var(--color-text-secondary);">An error occurred. Please try again.</p>`;
-  }
-}
-
-/**
- * Handle PE suggestion dismissal
- */
-async function handlePEDismiss(container, proposalId) {
-  try {
-    const result = await peIntegration.handleDismiss(proposalId);
-    if (result.success) {
-      showPEDismissalState(container);
-    } else {
-      container.innerHTML = `<p style="color: var(--color-text-secondary);">Unable to dismiss. Try again later.</p>`;
-    }
-  } catch (err) {
-    console.error('[My Day PE] Dismiss error:', err);
-    container.innerHTML = `<p style="color: var(--color-text-secondary);">An error occurred. Please try again.</p>`;
+    console.warn('[My Day] PE suggestions error:', err.message);
   }
 }

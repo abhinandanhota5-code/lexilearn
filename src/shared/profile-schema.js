@@ -203,7 +203,7 @@ export function validateProfileInput(input) {
 
   // Grade validation
   if (!input.grade || !GRADE_LEVELS.includes(input.grade)) {
-    errors.grade = 'Please select a grade level from Kindergarten to 6th Grade.';
+    errors.grade = 'Please select a grade level from 1st to 6th Grade.';
   }
 
   // Age validation
