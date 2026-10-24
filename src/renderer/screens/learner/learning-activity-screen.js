@@ -122,6 +122,9 @@ export function renderLearningActivityScreen(container, {
 
   container.innerHTML = `
     <div class="learner-container screen-enter" style="justify-content: flex-start; padding-top: var(--space-lg);">
+      <!-- BUILD VERIFICATION MARKER - TEMPORARY -->
+      <div style="position: fixed; top: 10px; right: 10px; background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 9999;">BUILD v2024-10-24</div>
+
       <!-- Progress Bar - Colorful and Visible -->
       <div class="quest-progress">
         <div class="quest-progress-track">
