@@ -753,42 +753,129 @@
 
 /* ─── Accessibility: Reduce Motion ───────────────────────────────── */
 
+@keyframes star-pop {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-in-bottom {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-out {
+  to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* Companion greeting */
+.companion-greeting {
+  margin-bottom: var(--space-lg);
+  animation: slide-in-bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.companion-bubble {
+  background-color: var(--color-bg-card);
+  border: 2px solid var(--color-accent);
+  border-radius: 16px;
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.companion-emoji {
+  font-size: 48px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.companion-text {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: left;
+}
+
+/* Feedback celebration */
+.companion-feedback {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.feedback-celebration {
+  text-align: center;
+  animation: fade-out 1.8s ease-in forwards 0.2s;
+}
+
+.feedback-celebration .star {
+  display: inline-block;
+  font-size: 32px;
+  margin: 0 var(--space-sm);
+  animation: star-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.feedback-celebration .star-1 { animation-delay: 0s; }
+.feedback-celebration .star-2 { animation-delay: 0.1s; }
+.feedback-celebration .star-3 { animation-delay: 0.2s; }
+
+.feedback-text {
+  font-family: var(--font-family-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-success);
+  margin-top: var(--space-md);
+}
+
+.feedback-retry {
+  background-color: var(--color-bg-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+  padding: var(--space-lg);
+  animation: fade-out 1.8s ease-in forwards 0.2s;
+}
+
+.feedback-retry .feedback-text {
+  color: var(--color-text-primary);
+  font-size: 22px;
+}
+
+/* Mission progress */
+.mission-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  font-size: 24px;
+  margin: var(--space-lg) 0;
+  animation: slide-in-bottom 0.4s ease-out;
+}
+
+.mission-count {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  .option-btn {
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+  .companion-greeting,
+  .companion-feedback,
+  .mission-progress {
+    animation: none;
   }
 
-  .option-btn:hover:not(:disabled),
-  .option-btn:active:not(:disabled),
-  .learner-btn-primary:hover:not(:disabled),
-  .learner-btn-primary:active:not(:disabled) {
+  .feedback-celebration .star {
+    animation: none;
+    opacity: 1;
     transform: none;
-  }
-
-  .option-btn.is-correct,
-  .celebration-emoji,
-  .screen-enter,
-  .quest-progress-fill,
-  .task-card-enter,
-  .option-enter,
-  .progress-pop,
-  .celebration-card-enter,
-  .celebration-stat-enter {
-    animation: none;
-  }
-
-  .option-enter {
-    animation: none;
-    opacity: 1;
-  }
-
-  .celebration-card-enter {
-    animation: none;
-    opacity: 1;
-  }
-
-  .celebration-stat-enter {
-    animation: none;
-    opacity: 1;
   }
 }
