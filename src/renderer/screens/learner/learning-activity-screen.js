@@ -121,29 +121,39 @@ export function renderLearningActivityScreen(container, {
     : renderBuildContent(plan);
 
   container.innerHTML = `
-    <div class="learner-container screen-enter" style="justify-content: flex-start; padding-top: var(--space-xl);">
+    <div class="learner-container screen-enter" style="justify-content: flex-start; padding-top: var(--space-lg);">
+      <!-- Progress Bar - Colorful and Visible -->
       <div class="quest-progress">
         <div class="quest-progress-track">
           <div class="quest-progress-fill" style="width: ${progressPct}%;"></div>
         </div>
         <div class="quest-progress-label progress-pop">
-          <span>Activity ${completedCount + 1}</span>
-          <span>${progressPct}% done</span>
+          <span style="font-weight: 700; color: var(--color-accent);">Activity ${completedCount + 1} of ${goalActivities}</span>
+          <span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">${progressPct}% complete ⭐</span>
         </div>
       </div>
 
-      <div class="learner-card task-card-enter" style="margin-top: var(--space-md);">
-        <span class="task-category-badge">${escapeHtml(plan.title || 'Practice')}</span>
+      <!-- Main Learning Card - Large, Friendly, Centered -->
+      <div class="learner-card task-card-enter" style="margin-top: var(--space-lg); max-width: 700px; margin-left: auto; margin-right: auto;">
+        <!-- Category Badge -->
+        <span class="task-category-badge" style="background: var(--color-accent); color: white; display: inline-block; margin-bottom: var(--space-md);">${escapeHtml(plan.title || 'Practice')}</span>
 
-        <div class="task-prompt" id="activity-prompt">${escapeHtml(plan.prompt || plan.content?.prompt || '')}</div>
+        <!-- Large, Clear Question -->
+        <div class="task-prompt" id="activity-prompt" style="font-size: 28px; font-weight: 700; line-height: 1.6; color: var(--color-text-primary); margin-bottom: var(--space-lg); text-align: center;">
+          ${escapeHtml(plan.prompt || plan.content?.prompt || '')}
+        </div>
 
+        <!-- Answer Options / Content -->
         ${contentHtml}
 
-        <div class="activity-feedback" id="activity-feedback" role="status" aria-live="polite"></div>
+        <!-- Feedback Display - Clear and Encouraging -->
+        <div class="activity-feedback" id="activity-feedback" role="status" aria-live="polite" style="font-size: 20px; font-weight: 600; text-align: center; padding: var(--space-md); border-radius: 12px; margin: var(--space-md) 0; display: none;"></div>
 
+        <!-- Audio Controls - Always Visible -->
         ${supportRow}
 
-        <div class="quest-timer" id="quest-timer">
+        <!-- Timer - Gentle -->
+        <div class="quest-timer" style="text-align: center; font-size: var(--font-size-sm); color: var(--color-text-secondary); margin-top: var(--space-md);">
           <span>⏱️</span>
           <span id="timer-display">${formatTime(timeLimitMs)}</span>
         </div>
@@ -357,7 +367,12 @@ export function renderLearningActivityScreen(container, {
 
     const feedbackEl = container.querySelector('#activity-feedback');
     if (feedbackEl) {
-      feedbackEl.textContent = FEEDBACK_COPY[outcome] || FEEDBACK_COPY.incorrect;
+      const feedbackText = FEEDBACK_COPY[outcome] || FEEDBACK_COPY.incorrect;
+      feedbackEl.textContent = feedbackText;
+      feedbackEl.style.display = 'block';
+      feedbackEl.style.backgroundColor = isCorrect ? 'var(--color-success-bg)' : '#FEE2E2';
+      feedbackEl.style.color = isCorrect ? 'var(--color-success)' : 'var(--color-error)';
+      feedbackEl.style.borderLeft = `4px solid ${isCorrect ? 'var(--color-success)' : 'var(--color-error)'}`;
       feedbackEl.classList.add('is-visible');
     }
   }
