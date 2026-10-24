@@ -3,6 +3,18 @@
  * Built on dyslexia-accessible tokens with generous whitespace and clear interaction targets.
  */
 
+/* Keyframe Animations */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+}
+
 .parent-container {
   max-width: 820px;
   margin: 0 auto;
@@ -284,6 +296,7 @@
   justify-content: flex-end;
 }
 
+/* PRIMARY BUTTON: Large, Colorful, Friendly */
 .btn-primary {
   min-height: var(--target-size-min);
   padding: 0 var(--space-xl);
@@ -299,30 +312,63 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  transition: var(--transition-gentle);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   outline: none;
+  position: relative;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .btn-primary:hover:not(:disabled) {
   background-color: var(--color-accent-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.25);
 }
 
 .btn-primary:focus-visible {
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.35), 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
+/* Loading state */
+.btn-primary.is-loading {
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn-primary.is-loading::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Success state */
+.btn-primary.is-success {
+  background-color: var(--color-success);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.btn-primary.is-success::before {
+  content: '✓ ';
+  font-weight: 700;
+}
+
+/* SECONDARY BUTTON: Friendly, Supporting */
 .btn-secondary {
   min-height: var(--target-size-min);
   padding: 0 var(--space-lg);
@@ -330,44 +376,67 @@
   font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--color-text-primary);
-  background-color: transparent;
+  background-color: var(--color-bg-card);
   border: 2px solid var(--color-border);
   border-radius: var(--target-radius);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-gentle);
+  gap: var(--space-xs);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   outline: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-bg-card);
-  border-color: var(--color-text-secondary);
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  border-color: var(--color-accent);
   transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
 }
 
 .btn-secondary:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
 }
 
 .btn-secondary:focus-visible {
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-accent);
 }
 
 .btn-secondary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
+/* DESTRUCTIVE BUTTON: Clear warning, but not scary */
 .btn-danger {
   color: var(--color-error);
+  background-color: var(--color-error-bg);
   border-color: #FECACA;
 }
 
-.btn-danger:hover {
-  background-color: var(--color-error-bg);
-  border-color: var(--color-error);
+.btn-danger:hover:not(:disabled) {
+  background-color: #FEE2E2;
+  border-color: #EF4444;
+  color: #DC2626;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.2);
+}
+
+.btn-danger:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.15);
+}
+
+.btn-danger:focus-visible {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-color: #EF4444;
 }
 
 /* Banner Alert */
@@ -508,19 +577,28 @@
  * Reuses the existing button classes, typography, and colors.
  */
 
+/* Redesigned Action Button Grid - Cohesive, Aligned, Playful */
 .profile-action-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  column-gap: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  justify-content: space-between;
   margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border);
 }
 
 .profile-action-col {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--space-sm);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.profile-action-col-left {
+  justify-content: flex-start;
 }
 
 .profile-action-col-right {

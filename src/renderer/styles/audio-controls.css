@@ -1,0 +1,61 @@
+/**
+ * Audio Controls Styling
+ */
+
+.audio-controls {
+  margin: var(--space-md) 0;
+  display: flex;
+  justify-content: center;
+}
+
+.audio-button-group {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.audio-btn {
+  min-height: 48px;
+  padding: 0 var(--space-md);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: #FFFFFF;
+  background-color: #7C3AED;
+  border: none;
+  border-radius: var(--target-radius);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.audio-btn:hover:not(:disabled) {
+  background-color: #6D28D9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+}
+
+.audio-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+.audio-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3), 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.audio-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-btn {
+    transition: background-color 0.1s ease;
+  }
+}
