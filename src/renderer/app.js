@@ -1,6 +1,7 @@
 import { renderWelcomeScreen } from './screens/parent/welcome-screen.js';
 import { renderLearnerBasicsScreen } from './screens/parent/learner-basics-screen.js';
 import { renderProfileOverviewScreen } from './screens/parent/profile-overview-screen.js';
+import { renderParentDashboardScreen } from './screens/parent/parent-dashboard-screen.js';
 import { renderDocumentUploadScreen } from './screens/parent/document-upload-screen.js';
 import { renderReviewConfirmScreen } from './screens/parent/review-confirm-screen.js';
 import { renderCurriculumSelectionScreen } from './screens/parent/curriculum-selection-screen.js';

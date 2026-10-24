@@ -167,23 +167,38 @@ export function renderLearningActivityScreen(container, {
 
   /* ── audio presentation ── */
 
+  // Determine what text to speak: use audioPrompt, or fall back to visible prompt text
+  const textToSpeak = audioPrompt || plan.prompt || plan.content?.prompt || '';
+
   async function speak(isReplay) {
-    if (!tts || !audioPrompt) return;
+    if (!tts || !textToSpeak) return;
     const btn = container.querySelector(isReplay ? '#replay-btn' : '#audio-btn');
-    btn?.classList.add('is-speaking');
-    const res = await tts.speak(audioPrompt, { rate: presentation.ttsRate ?? 0.85 });
-    btn?.classList.remove('is-speaking');
-    if (res?.ok) {
-      audioSignals.audioUsed = true;
-      if (isReplay) {
-        audioSignals.replayCount += 1;
-        audioSignals.answeredAfterReplay = true;
-        audioSignals.answeredAfterFirstListen = false;
-      } else {
-        audioSignals.answeredAfterFirstListen = true;
-        audioSignals.answeredAfterReplay = false;
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add('is-speaking');
+    }
+
+    try {
+      const res = await tts.speak(textToSpeak, { rate: presentation.ttsRate ?? 0.85 });
+      if (res?.ok) {
+        audioSignals.audioUsed = true;
+        if (isReplay) {
+          audioSignals.replayCount += 1;
+          audioSignals.answeredAfterReplay = true;
+          audioSignals.answeredAfterFirstListen = false;
+        } else {
+          audioSignals.answeredAfterFirstListen = true;
+          audioSignals.answeredAfterReplay = false;
+        }
+        audioSignals.textAndAudio = true;
       }
-      audioSignals.textAndAudio = true; // text is always visible alongside
+    } catch (err) {
+      console.error('Speech synthesis error:', err);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('is-speaking');
+      }
     }
   }
 
@@ -192,9 +207,11 @@ export function renderLearningActivityScreen(container, {
   if (audioBtn) audioBtn.addEventListener('click', () => speak(false));
   if (replayBtn) replayBtn.addEventListener('click', () => speak(true));
 
-  // Auto-speak once when audio leads the presentation.
-  if (tts && presentation.mode === 'audio') {
-    setTimeout(() => speak(false), 350);
+  // Auto-speak when audio leads presentation, or if textToSpeak is available
+  if (tts && textToSpeak) {
+    if (presentation.mode === 'audio') {
+      setTimeout(() => speak(false), 350);
+    }
   }
 
   /* ── help panel ── */

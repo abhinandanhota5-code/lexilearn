@@ -5,7 +5,7 @@ import { AVAILABLE_AVATARS, AVAILABLE_THEMES } from '../../../shared/profile-sch
  * Loaded automatically on startup when an existing profile is detected.
  */
 
-export function renderProfileOverviewScreen(container, { profile, onEditProfile, onUploadDocument, onSchoolMaterial, onStartLearning, onResetProfile }) {
+export function renderProfileOverviewScreen(container, { profile, onEditProfile, onUploadDocument, onSchoolMaterial, onStartLearning, onResetProfile, onParentDashboard }) {
   // Apply saved theme
   document.body.setAttribute('data-theme', profile.theme || 'warm-parchment');
 
