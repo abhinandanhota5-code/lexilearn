@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="brand/lexilearn-logo.png" alt="LexiLearn logo" width="180" />
+</p>
+
 # LexiLearn
 
 A **local-first, offline-capable** learning companion for children with dyslexia. LexiLearn runs as a desktop app (Electron) with no accounts, no cloud services, and no learner data leaving the device.

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFF8E7"/>
+      <stop offset="1" stop-color="#FDEFD2"/>
+    </linearGradient>
+    <linearGradient id="carTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF6B8A"/>
+      <stop offset="1" stop-color="#E94560"/>
+    </linearGradient>
+    <linearGradient id="bookCover" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4DB6AC"/>
+      <stop offset="1" stop-color="#26A69A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- badge background -->
+  <rect x="0" y="0" width="1024" height="1024" rx="200" fill="url(#bg)"/>
+  <rect x="26" y="26" width="972" height="972" rx="178" fill="none" stroke="#E94560" stroke-width="10" opacity="0.18"/>
+
+  <!-- speed swoosh -->
+  <path d="M150 560 Q 120 430 260 350" fill="none" stroke="#F6A623" stroke-width="26" stroke-linecap="round" opacity="0.85"/>
+  <path d="M196 610 Q 168 505 280 442" fill="none" stroke="#E94560" stroke-width="18" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- open storybook -->
+  <g transform="translate(512 640)">
+    <path d="M-300 40 L-300 -70 Q-160 -125 -20 -70 L-20 60 Q-160 10 -300 40 Z" fill="url(#bookCover)"/>
+    <path d="M300 40 L300 -70 Q160 -125 20 -70 L20 60 Q160 10 300 40 Z" fill="url(#bookCover)"/>
+    <path d="M-282 22 L-282 -56 Q-155 -104 -36 -56 L-36 40 Q-155 -2 -282 22 Z" fill="#FFFDF6"/>
+    <path d="M282 22 L282 -56 Q155 -104 36 -56 L36 40 Q155 -2 282 22 Z" fill="#FFFDF6"/>
+    <!-- text lines on pages -->
+    <g stroke="#C9B99A" stroke-width="9" stroke-linecap="round">
+      <path d="M-240 -38 Q-160 -66 -80 -40"/>
+      <path d="M-240 -12 Q-160 -40 -80 -14"/>
+      <path d="M-240 14 Q-180 -8 -120 -2"/>
+      <path d="M240 -38 Q160 -66 80 -40"/>
+      <path d="M240 -12 Q160 -40 80 -14"/>
+    </g>
+    <rect x="-14" y="-72" width="28" height="136" rx="12" fill="#1A202C" opacity="0.12"/>
+  </g>
+
+  <!-- the little racing car, peeking over the book -->
+  <g transform="translate(512 400)">
+    <!-- star behind -->
+    <path d="M210 -140 l16 42 45 5 -33 31 9 45 -37 -21 -37 21 9 -45 -33 -31 45 -5 z" fill="#F6E05E" stroke="#D69E2E" stroke-width="8"/>
+    <!-- body -->
+    <ellipse cx="0" cy="58" rx="196" ry="98" fill="url(#carTop)"/>
+    <path d="M-120 20 Q -95 -95 0 -95 Q 95 -95 120 20 Z" fill="#FF8FA6"/>
+    <!-- windshield -->
+    <path d="M-88 8 Q -70 -68 0 -68 Q 70 -68 88 8 Z" fill="#BEE3F8"/>
+    <path d="M-60 -2 Q -50 -44 0 -44" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" opacity="0.8"/>
+    <!-- eyes -->
+    <g>
+      <circle cx="-46" cy="-6" r="26" fill="#FFFFFF"/>
+      <circle cx="46" cy="-6" r="26" fill="#FFFFFF"/>
+      <circle cx="-40" cy="-2" r="13" fill="#1A202C"/>
+      <circle cx="52" cy="-2" r="13" fill="#1A202C"/>
+      <circle cx="-36" cy="-7" r="4.5" fill="#FFFFFF"/>
+      <circle cx="56" cy="-7" r="4.5" fill="#FFFFFF"/>
+    </g>
+    <!-- smile -->
+    <path d="M-34 40 Q 0 66 34 40" fill="none" stroke="#7A1024" stroke-width="10" stroke-linecap="round"/>
+    <!-- headlights -->
+    <circle cx="-150" cy="42" r="17" fill="#F6E05E" stroke="#D69E2E" stroke-width="5"/>
+    <circle cx="150" cy="42" r="17" fill="#F6E05E" stroke="#D69E2E" stroke-width="5"/>
+    <!-- wheels -->
+    <g>
+      <circle cx="-108" cy="140" r="52" fill="#1A202C"/>
+      <circle cx="-108" cy="140" r="24" fill="#CBD5E0"/>
+      <circle cx="108" cy="140" r="52" fill="#1A202C"/>
+      <circle cx="108" cy="140" r="24" fill="#CBD5E0"/>
+    </g>
+    <!-- racing number -->
+    <circle cx="0" cy="96" r="26" fill="#FFF8E7"/>
+    <text x="0" y="106" text-anchor="middle" font-family="Verdana, 'DejaVu Sans', sans-serif" font-size="34" font-weight="bold" fill="#E94560">1</text>
+  </g>
+
+  <!-- wordmark -->
+  <text x="512" y="868" text-anchor="middle" font-family="'Lexend', Verdana, 'DejaVu Sans', sans-serif" font-size="108" font-weight="bold" letter-spacing="2" fill="#1F2933">
+    Lexi<tspan fill="#E94560">Learn</tspan>
+  </text>
+  <text x="512" y="922" text-anchor="middle" font-family="'Lexend', Verdana, 'DejaVu Sans', sans-serif" font-size="30" letter-spacing="10" fill="#6B7280">READ · PLAY · GROW</text>
+</svg>
