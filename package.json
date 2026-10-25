@@ -1,7 +1,7 @@
 {
   "name": "dyslexia-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "LexiLearn — a local-first, offline dyslexia learning companion (Electron) with adjustable reading accessibility",
   "main": "main.js",
   "scripts": {
     "test": "vitest",
