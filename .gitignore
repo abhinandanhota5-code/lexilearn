@@ -34,3 +34,7 @@ test-ai.js
 
 # Backup files
 *.broken-backup
+
+# Local tool state
+.qoder/
+.vitest/
