@@ -799,7 +799,8 @@ export function setGenerationProviderForTests(provider) {
  * explicit test-only provider injection. No other env reads exist.
  */
 function isGeneratedActivityEnabled() {
-  return FEATURE_FLAGS.generatedActivities() || generationProviderOverride !== null;
+  const flags = FEATURE_FLAGS || {};
+  return flags.generatedActivities || generationProviderOverride !== null;
 }
 
 /* ───────────────────────── test / diagnostics hooks ───────────────────────── */

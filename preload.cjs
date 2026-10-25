@@ -112,6 +112,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   recordVisualSignal: (payload) => ipcRenderer.invoke(IPC_CHANNELS.LEARNING_VISUAL_SIGNAL, payload),
   getDailyDashboard: () => ipcRenderer.invoke(IPC_CHANNELS.DAILY_GET_DASHBOARD),
 
+  // Dashboard Analytics (Parent Dashboard)
+  getAllLearningSessions: (learnerId) => ipcRenderer.invoke(IPC_CHANNELS.LEARNING_GET_ALL_SESSIONS, learnerId),
+  getAllScreeningSessions: (learnerId) => ipcRenderer.invoke(IPC_CHANNELS.SCREENING_GET_ALL_SESSIONS, learnerId),
+
   // Channel Constants
   channels: IPC_CHANNELS
 });

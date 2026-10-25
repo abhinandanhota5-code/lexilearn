@@ -41,7 +41,5 @@ export const LLM_CONFIG = Object.freeze({
  * by design; nothing else may gate on ad-hoc env reads.
  */
 export const FEATURE_FLAGS = Object.freeze({
-  generatedActivities() {
-    return process.env.LEXI_LEARN_GENERATED_ACTIVITY === '1';
-  }
+  generatedActivities: true
 });

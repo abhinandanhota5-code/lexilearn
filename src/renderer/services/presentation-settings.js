@@ -146,5 +146,13 @@ export function applyPresentationSettings(accommodations, doc = document) {
   if (typeof a.lineFocusEnabled === 'boolean') {
     root.setAttribute('data-line-focus', a.lineFocusEnabled ? 'on' : 'off');
   }
+
+  // Reading color theme (cream / light / dark / high-contrast) is independent
+  // of the companion world theme (data-theme) — separate attribute so the two
+  // never overwrite each other.
+  const READING_COLOR_THEMES = ['cream', 'light', 'dark', 'high-contrast'];
+  if (READING_COLOR_THEMES.includes(a.readingColorTheme)) {
+    (doc.body || root).setAttribute('data-reading-color', a.readingColorTheme);
+  }
   return vars;
 }

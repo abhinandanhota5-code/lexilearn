@@ -79,13 +79,37 @@
 /* ─── Cards ──────────────────────────────────────────────────────── */
 
 .learner-card {
-  background-color: var(--color-bg-surface);
-  border: 2px solid var(--color-border);
-  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 24px;
   padding: var(--space-xl);
   width: 100%;
   max-width: 700px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.learner-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+  animation: premium-shine 3s infinite;
+  pointer-events: none;
+}
+
+.learner-card.task-card-premium {
+  background: linear-gradient(135deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05));
+}
+
+@keyframes premium-shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
 /* ─── Task Prompt Card ───────────────────────────────────────────── */
@@ -139,23 +163,41 @@
   padding: var(--space-md) var(--space-lg);
   font-family: var(--font-family-display);
   font-size: var(--font-size-base);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-primary);
-  background-color: var(--color-bg-primary);
-  border: 3px solid var(--color-border);
-  border-radius: var(--target-radius);
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 14px;
   cursor: pointer;
   outline: none;
   transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
               background-color 0.25s ease,
               border-color 0.25s ease,
-              box-shadow 0.25s ease;
+              box-shadow 0.25s ease,
+              background 0.25s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.option-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: translateX(-100%);
+  pointer-events: none;
 }
 
 .option-btn:hover:not(:disabled) {
-  border-color: var(--color-accent);
-  background-color: var(--color-bg-card);
-  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.5);
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .option-btn:active:not(:disabled) {
@@ -173,21 +215,23 @@
 
 /* Feedback states — correct (green, seesaw bounce), incorrect (gentle neutral) */
 .option-btn.is-correct {
-  background-color: var(--color-success-bg);
-  border-color: var(--color-success);
-  color: var(--color-success);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(34, 197, 94, 0.1));
+  border-color: rgba(34, 197, 94, 0.6);
+  color: #22c55e;
   animation: option-correct-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
 }
 
 .option-btn.is-incorrect {
-  background-color: var(--color-bg-card);
-  border-color: var(--color-border);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+  border-color: rgba(239, 68, 68, 0.4);
   text-decoration: line-through;
   text-decoration-thickness: 2px;
+  opacity: 0.8;
 }
 
 .option-btn.is-muted {
-  opacity: 0.45;
+  opacity: 0.35;
 }
 
 /* Outcome line under the activity — appears only once main has judged the
@@ -437,6 +481,53 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   margin-top: 4px;
+}
+
+.celebration-stat-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+}
+
+/* Quest Complete hero row: companion widget beside the heading */
+.quest-summary-card {
+  text-align: left;
+}
+
+.quest-hero-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.quest-hero-host {
+  flex: 0 0 auto;
+}
+
+.quest-hero-intro {
+  min-width: 0;
+}
+
+.quest-complete-heading {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.quest-complete-sub {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .quest-hero-row {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
 /* Gentle entry animation for screen switching */
@@ -910,4 +1001,132 @@
     opacity: 1;
     transform: none;
   }
+}
+/* ── Mission landing polish ─────────────────────────────────────── */
+
+.mission-card {
+  position: relative;
+  overflow: visible;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 200, 87, 0.14), transparent 42%),
+    radial-gradient(circle at 88% 82%, rgba(99, 179, 237, 0.14), transparent 42%),
+    var(--color-bg-surface);
+}
+
+.mission-hero-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  min-height: 140px;
+  margin-bottom: var(--space-sm);
+}
+
+.mission-bubble {
+  position: relative;
+  max-width: min(320px, 70%);
+  background: var(--color-bg-primary);
+  border: 2px solid var(--color-border);
+  border-radius: 18px;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);
+  animation: mission-bubble-in 0.45s ease both;
+}
+
+.mission-bubble::after {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  margin-top: -8px;
+  width: 16px;
+  height: 16px;
+  background: var(--color-bg-primary);
+  border-left: 2px solid var(--color-border);
+  border-bottom: 2px solid var(--color-border);
+  transform: rotate(45deg);
+  border-bottom-left-radius: 4px;
+}
+
+.mission-bubble.bubble-pop {
+  animation: mission-bubble-pop 0.4s ease both;
+}
+
+.mission-goal {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: var(--space-md) 0;
+}
+
+.mission-stat {
+  min-width: 170px;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: 18px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-primary);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.05);
+}
+
+.mission-stat .celebration-stat-value {
+  font-size: var(--font-size-xl);
+}
+
+.mission-stat .celebration-stat-label {
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+.mission-start-btn {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 6px 0 rgba(37, 99, 235, 0.45);
+}
+
+.mission-start-btn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.06);
+}
+
+.mission-start-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(37, 99, 235, 0.45);
+}
+
+@keyframes mission-bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes mission-bubble-pop {
+  0% { transform: scale(0.9); opacity: 0.4; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mission-bubble,
+  .mission-bubble.bubble-pop { animation: none; }
+  .mission-start-btn { transition: none; }
+}
+
+/* ── My Day: rest / celebration state ───────────────────────────── */
+
+.myday-main-card--rest {
+  background:
+    radial-gradient(circle at 85% 10%, rgba(246, 224, 94, 0.18), transparent 40%),
+    radial-gradient(circle at 10% 90%, rgba(139, 195, 74, 0.12), transparent 40%),
+    var(--color-bg-surface);
+}
+
+.myday-rest-strip {
+  font-size: var(--font-size-xl);
+  letter-spacing: 0.35em;
+  margin-top: var(--space-sm);
 }

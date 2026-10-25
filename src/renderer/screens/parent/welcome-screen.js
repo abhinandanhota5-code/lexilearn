@@ -5,6 +5,8 @@
 
 export function renderWelcomeScreen(container, { onContinue }) {
   container.innerHTML = `
+    <!-- BUILD VERIFICATION: Welcome Screen -->
+    <div style="position: fixed; top: 12px; right: 12px; background: #FF6B6B; color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; z-index: 9999;">🔴 BUILD v2024-10-24</div>
     <div class="parent-container">
       <div class="parent-header">
         <span class="parent-badge">Step 1 of 2 • Parent Gateway</span>

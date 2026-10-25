@@ -70,5 +70,9 @@ export const IPC_CHANNELS = {
 
   // Personalization Engine — Approval Workflow (MVP Hackathon)
   PE_GET_PENDING_PROPOSALS: 'pe:get-pending-proposals',
-  PE_SUBMIT_APPROVAL: 'pe:submit-approval'
+  PE_SUBMIT_APPROVAL: 'pe:submit-approval',
+
+  // Dashboard Analytics (Parent Dashboard)
+  LEARNING_GET_ALL_SESSIONS: 'learning:get-all-sessions',
+  SCREENING_GET_ALL_SESSIONS: 'screening:get-all-sessions'
 };

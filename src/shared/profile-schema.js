@@ -3,15 +3,48 @@
  */
 
 export const AVAILABLE_AVATARS = [
-  { id: 'fox', label: 'Curious Fox', emoji: '🦊' },
-  { id: 'owl', label: 'Wise Owl', emoji: '🦉' },
-  { id: 'bear', label: 'Friendly Bear', emoji: '🐻' },
-  { id: 'dolphin', label: 'Playful Dolphin', emoji: '🐬' },
-  { id: 'rabbit', label: 'Quick Rabbit', emoji: '🐰' },
-  { id: 'turtle', label: 'Calm Turtle', emoji: '🐢' }
+  {
+    id: 'racing-car',
+    label: '🏎️ Racing Car',
+    emoji: '🏎️',
+    color: '#E94560',
+    secondaryColor: '#FF6B8A',
+    gradient: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #E94560 100%)',
+    personality: 'energetic',
+    quote: 'Vroom! Let\'s race to victory!',
+    animationType: 'racing-car',
+    themeId: 'racing-world'
+  },
+  {
+    id: 'dinosaur',
+    label: '🦕 Dinosaur',
+    emoji: '🦕',
+    color: '#8BC34A',
+    secondaryColor: '#A5D6A7',
+    gradient: 'linear-gradient(135deg, #2d5016 0%, #5a7d3d 50%, #8BC34A 100%)',
+    personality: 'friendly',
+    quote: 'Rawr! Learning is dino-mite!',
+    animationType: 'dinosaur',
+    themeId: 'dinosaur-world'
+  },
+  {
+    id: 'ocean-friends',
+    label: '🐙 Ocean Friends',
+    emoji: '🐙',
+    color: '#00BCD4',
+    secondaryColor: '#4DD0E1',
+    gradient: 'linear-gradient(135deg, #0a3d62 0%, #1a5f7a 50%, #00BCD4 100%)',
+    personality: 'calm',
+    quote: 'Glide through learning with us!',
+    animationType: 'ocean-friends',
+    themeId: 'ocean-world'
+  }
 ];
 
 export const AVAILABLE_THEMES = [
+  { id: 'racing-world', name: 'Racing World', description: 'Speed through learning with racing thrills', bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', color: '#E94560', companion: 'racing-car' },
+  { id: 'dinosaur-world', name: 'Dinosaur World', description: 'Stomp through stories in a prehistoric adventure', bg: 'linear-gradient(135deg, #2d5016 0%, #5a7d3d 100%)', color: '#8BC34A', companion: 'dinosaur' },
+  { id: 'ocean-world', name: 'Ocean World', description: 'Dive into discovery beneath the waves', bg: 'linear-gradient(135deg, #0a3d62 0%, #1a5f7a 100%)', color: '#00BCD4', companion: 'ocean-friends' },
   { id: 'warm-parchment', name: 'Warm Parchment', description: 'Soft cream tint', bg: '#FDFBF7' },
   { id: 'soft-mint', name: 'Soft Mint', description: 'Gentle pale green', bg: '#F4FAF6' },
   { id: 'peach-glow', name: 'Peach Glow', description: 'Warm soothing tone', bg: '#FFF8F3' },
@@ -33,6 +66,8 @@ export const DEFAULT_ACCOMMODATIONS = {
   fontSizePx: 24,
   lineHeight: 1.9,
   letterSpacingEm: 0.16,
+  wordSpacingEm: 0.25,
+  readingColorTheme: 'cream',
   readingRulerEnabled: true,
   syllableColoringEnabled: true,
   audioNarrationSpeed: 0.85,

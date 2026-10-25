@@ -1,0 +1,204 @@
+/**
+ * Companion sticker decorations.
+ * pointer-events: none everywhere — never cover buttons, text, or controls.
+ */
+
+.sticker-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Content above stickers: common learner wrappers + cards */
+.learner-container > :not(.sticker-layer),
+.myday-container > :not(.sticker-layer),
+.my-world-container > :not(.sticker-layer),
+.sticker-collection-container > :not(.sticker-layer),
+.theme-selection-container > :not(.sticker-layer),
+.world-editor-container > :not(.sticker-layer),
+.learner-card > :not(.sticker-layer) {
+  position: relative;
+  z-index: 1;
+}
+
+.sticker {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.12));
+  opacity: 0.92;
+}
+
+.sticker svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Sizes — responsive via clamp */
+.sticker--xs { width: clamp(28px, 5vw, 40px); height: clamp(28px, 5vw, 40px); opacity: 0.55; }
+.sticker--sm { width: clamp(36px, 6vw, 52px); height: clamp(36px, 6vw, 52px); opacity: 0.7; }
+.sticker--md { width: clamp(48px, 8vw, 72px); height: clamp(48px, 8vw, 72px); }
+.sticker--lg { width: clamp(64px, 12vw, 96px); height: clamp(64px, 12vw, 96px); }
+.sticker--xl { width: clamp(80px, 16vw, 120px); height: clamp(80px, 16vw, 120px); }
+
+/* ── Home placement ─────────────────────────────────────────────── */
+.sticker-slot--top-left { top: 2%; left: 2%; }
+.sticker-slot--top-right { top: 3%; right: 3%; }
+.sticker-slot--bottom-left { bottom: 8%; left: 3%; }
+.sticker-slot--bottom-right { bottom: 10%; right: 4%; }
+
+/* ── Selection (subject/lesson) ─────────────────────────────────── */
+.sticker-layer--selection {
+  position: absolute;
+  inset: 0;
+}
+
+.sticker-slot--heading-left { top: 12px; left: 8px; }
+.sticker-slot--heading-right { top: 12px; right: 8px; }
+.sticker-slot--card-corner { top: 56px; right: 16px; opacity: 0.55; }
+
+/* ── Question corners (subtle) ──────────────────────────────────── */
+.sticker-layer--question {
+  /* sit on the card; host should be the learner-card */
+}
+
+.sticker-slot--corner-tl { top: 8px; left: 8px; }
+.sticker-slot--corner-br { bottom: 8px; right: 8px; }
+
+/* ── Celebrate / progress ───────────────────────────────────────── */
+.sticker-slot--celebrate-center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.sticker-slot--celebrate-left { top: 20%; left: 8%; }
+.sticker-slot--celebrate-right { top: 22%; right: 8%; }
+.sticker-slot--milestone { top: 8px; right: 12px; }
+.sticker-slot--milestone-side { top: 16px; left: 12px; }
+
+/* ── Scrapbook scatter (child screens) ─────────────────────────── */
+.sticker-layer--scrapbook .sticker {
+  transform: rotate(var(--sticker-rot, 0deg));
+}
+
+.sticker-slot--sb-1  { top: 2%;  left: 3%; }
+.sticker-slot--sb-2  { top: 5%;  right: 6%; }
+.sticker-slot--sb-3  { top: 24%; left: 2%; }
+.sticker-slot--sb-4  { top: 17%; right: 2%; }
+.sticker-slot--sb-5  { top: 48%; left: 1.5%; }
+.sticker-slot--sb-6  { top: 55%; right: 2%; }
+.sticker-slot--sb-7  { bottom: 16%; left: 4%; }
+.sticker-slot--sb-8  { bottom: 5%; right: 7%; }
+.sticker-slot--sb-9  { top: 33%; right: 9%; opacity: 0.5; }
+.sticker-slot--sb-10 { bottom: 26%; left: 9%; opacity: 0.55; }
+
+/* Inline celebration burst next to feedback */
+.sticker-celebrate {
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+
+.sticker-celebrate.is-leaving {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.85);
+}
+
+/* Progress layer sits on celebration cards */
+.sticker-layer--progress,
+.sticker-layer--celebrate {
+  border-radius: inherit;
+}
+
+/* ── Animations (subtle; disabled under reduced motion) ─────────── */
+@keyframes sticker-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes sticker-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-4px) rotate(2deg); }
+}
+
+@keyframes sticker-twinkle {
+  0%, 100% { opacity: 0.55; transform: rotate(var(--sticker-rot, 0deg)) scale(1); }
+  50% { opacity: 0.95; transform: rotate(var(--sticker-rot, 0deg)) scale(1.08); }
+}
+
+@keyframes sticker-drift {
+  0%, 100% { transform: rotate(var(--sticker-rot, 0deg)) translateY(0); }
+  50% { transform: rotate(var(--sticker-rot, 0deg)) translateY(-5px); }
+}
+
+@keyframes sticker-pop {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+  60% { transform: translate(-50%, -50%) scale(1.12); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+@keyframes sticker-burst {
+  0% { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  50% { transform: scale(1.1) rotate(4deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+}
+
+.sticker-anim--float { animation: sticker-float 4s ease-in-out infinite; }
+.sticker-anim--float-delay { animation: sticker-float 4.5s ease-in-out 0.6s infinite; }
+.sticker-anim--bob { animation: sticker-bob 3.2s ease-in-out infinite; }
+.sticker-anim--twinkle { animation: sticker-twinkle 2.8s ease-in-out infinite; }
+.sticker-anim--drift { animation: sticker-drift 5s ease-in-out infinite; }
+.sticker-anim--drift-delay { animation: sticker-drift 6s ease-in-out 1.2s infinite; }
+.sticker-anim--pop { animation: sticker-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.sticker-anim--burst { animation: sticker-burst 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.sticker-anim--burst-delay { animation: sticker-burst 0.7s 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.sticker-anim--none { animation: none; }
+
+/* Celebrate-center uses translate in keyframes; keep slot transform for others */
+.sticker-slot--celebrate-center.sticker-anim--pop {
+  animation: sticker-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@media (max-width: 640px) {
+  .sticker--lg { width: clamp(48px, 14vw, 72px); height: clamp(48px, 14vw, 72px); }
+  .sticker--md { width: clamp(40px, 10vw, 56px); height: clamp(40px, 10vw, 56px); }
+  .sticker-slot--bottom-left,
+  .sticker-slot--bottom-right {
+    bottom: 4%;
+  }
+  /* Keep stickers away from primary CTA area on small windows */
+  .sticker-layer--home .sticker-slot--bottom-left,
+  .sticker-layer--home .sticker-slot--bottom-right {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker-anim--float,
+  .sticker-anim--float-delay,
+  .sticker-anim--bob,
+  .sticker-anim--twinkle,
+  .sticker-anim--drift,
+  .sticker-anim--drift-delay,
+  .sticker-anim--pop,
+  .sticker-anim--burst,
+  .sticker-anim--burst-delay,
+  .sticker-slot--celebrate-center.sticker-anim--pop {
+    animation: none !important;
+  }
+
+  .sticker-celebrate {
+    transition: none;
+  }
+}

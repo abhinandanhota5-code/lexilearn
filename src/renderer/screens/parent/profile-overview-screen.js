@@ -1,4 +1,7 @@
 import { AVAILABLE_AVATARS, AVAILABLE_THEMES } from '../../../shared/profile-schema.js';
+import { renderCompanionSelectionScreen } from '../learner/companion-selection-screen.js';
+import { companionCharacterArt } from '../../components/companion/companion-art.js';
+import { mountStickerDecorations, companionIdFromProfile } from '../../components/stickers/sticker-layer.js';
 
 /**
  * Parent Profile Overview & Management
@@ -6,10 +9,25 @@ import { AVAILABLE_AVATARS, AVAILABLE_THEMES } from '../../../shared/profile-sch
  */
 
 export function renderProfileOverviewScreen(container, { profile, onEditProfile, onUploadDocument, onSchoolMaterial, onStartLearning, onResetProfile, onParentDashboard }) {
+  // Parent screen: never carry a leaked task-flow companion dock.
+  document.querySelectorAll('#companion-dock-host').forEach((el) => el.remove());
+
   // Apply saved theme
   document.body.setAttribute('data-theme', profile.theme || 'warm-parchment');
 
-  const avatar = AVAILABLE_AVATARS.find(a => a.id === profile.avatar) || { emoji: '🌟', label: 'Learner' };
+  const avatarData = AVAILABLE_AVATARS.find(a => a.id === profile.avatar);
+const avatar = avatarData || {
+  id: 'dinosaur',
+  emoji: '🦕',
+  label: 'Dinosaur',
+  animationType: 'dinosaur',
+  color: '#8BC34A',
+  secondaryColor: '#A5D6A7',
+  gradient: 'linear-gradient(135deg, #2d5016 0%, #5a7d3d 50%, #8BC34A 100%)',
+  personality: 'friendly',
+  quote: "Rawr! Learning is dino-mite!",
+  themeId: 'dinosaur-world'
+};
   const theme = AVAILABLE_THEMES.find(t => t.id === profile.theme) || { name: 'Warm Parchment' };
   const docInfo = profile.documentExtraction || {};
 
@@ -56,9 +74,6 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
 
   container.innerHTML = `
     <div class="parent-container">
-      <!-- BUILD VERIFICATION MARKER - VISIBLE IMMEDIATELY -->
-      <div style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #FF6B6B; color: white; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 9999;">✓ BUILD v2024-10-24-FRESH</div>
-
       <div class="parent-header">
         <span class="parent-badge">Learner Profile Active</span>
         <h1 class="parent-title">Welcome back, ${profile.name}! 👋</h1>
@@ -70,7 +85,7 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
       <div class="parent-card">
         <div class="profile-hero">
           <div class="profile-hero-avatar">
-            ${avatar.emoji}
+            ${companionCharacterArt(avatar.id, { size: 96 })}
           </div>
           <div class="profile-hero-info">
             <h2>${profile.name}</h2>
@@ -108,6 +123,14 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
         </div>
 
         <div class="info-grid">
+          <div class="info-tile">
+            <div class="info-tile-label">Companion</div>
+            <div class="info-tile-value" style="display: flex; align-items: center; gap: 8px;">
+              ${companionCharacterArt(avatar.id, { size: 44 })}
+              ${avatar.label}
+            </div>
+          </div>
+
           <div class="info-tile">
             <div class="info-tile-label">Visual Theme</div>
             <div class="info-tile-value" style="display: flex; align-items: center; gap: 8px;">
@@ -148,6 +171,9 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
             <button type="button" class="btn-secondary" id="parent-dashboard-btn">
               📊 Parent Dashboard
             </button>
+            <button type="button" class="btn-secondary" id="change-companion-btn">
+              🐙 Change Companion
+            </button>
             <button type="button" class="btn-secondary btn-danger" id="reset-profile-btn">
               🗑️ Reset Profile
             </button>
@@ -162,6 +188,11 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
       </div>
     </div>
   `;
+
+  mountStickerDecorations(container.querySelector('.parent-container') || container, {
+    companionId: companionIdFromProfile(profile),
+    placement: 'home'
+  });
 
   // Edit Profile Handler
   container.querySelector('#edit-profile-btn').addEventListener('click', () => {
@@ -188,8 +219,17 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
   const startLearningBtn = container.querySelector('#start-learning-btn');
   if (startLearningBtn && onStartLearning) {
     startLearningBtn.addEventListener('click', () => {
-      onStartLearning(profile);
-    });
+      // Mission fetch can take seconds — a second click would start a second
+      // flow (and a second companion dock). Re-rendering home re-enables it.
+      startLearningBtn.disabled = true;
+      startLearningBtn.textContent = 'Getting ready…';
+      try {
+        onStartLearning(profile);
+      } catch (err) {
+        startLearningBtn.disabled = false;
+        console.error('Failed to start learning flow:', err?.stack || err);
+      }
+    }, { once: true });
   }
 
   // School Materials: reflect the live (validated) state from storage and open
@@ -201,9 +241,10 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
     });
   }
   if (window.electronAPI && typeof window.electronAPI.listSchoolMaterials === 'function') {
-    const tileTitle = container.querySelector('#school-materials-tile > div > div > div:first-child');
-    const tileStatus = container.querySelector('#school-materials-status');
-    window.electronAPI.listSchoolMaterials(profile.learnerId).then((res) => {
+    try {
+      const tileTitle = container.querySelector('#school-materials-tile > div > div > div:first-child');
+      const tileStatus = container.querySelector('#school-materials-status');
+      window.electronAPI.listSchoolMaterials(profile.learnerId).then((res) => {
       const materials = res?.success ? (res.materials || []) : null;
       const loadFailed = !materials;
       const verified = materials ? materials.filter((m) => m.verificationStatus === 'verified').length : 0;
@@ -224,6 +265,9 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
               : 'Add the school system and the materials your child is learning from.';
       }
     }).catch(() => {});
+    } catch (err) {
+      console.error('Failed to load school materials tile:', err);
+    }
   }
 
   // Reset Profile Handler
@@ -241,6 +285,69 @@ export function renderProfileOverviewScreen(container, { profile, onEditProfile,
       }
     } catch (err) {
       alert(`Error resetting profile: ${err.message}`);
+    }
+  });
+
+  // Change Companion Handler
+  container.querySelector('#change-companion-btn')?.addEventListener('click', () => {
+    try {
+      renderCompanionSelectionScreen(container, {
+        profile,
+        onCompanionSelected: async (companionId) => {
+          try {
+            // Find the themeId for the selected companion
+            const avatarData = AVAILABLE_AVATARS.find(a => a.id === companionId);
+            const newTheme = avatarData?.themeId || profile.theme;
+
+            const result = await window.electronAPI.saveProfile({
+              ...profile,
+              avatar: companionId,
+              theme: newTheme
+            });
+            const updatedProfile = result.success ? result.profile : { ...profile, avatar: companionId, theme: newTheme };
+            // Apply the new theme immediately
+            document.body.setAttribute('data-theme', newTheme);
+            // Re-render profile overview with updated profile
+            renderProfileOverviewScreen(container, {
+              profile: updatedProfile,
+              onEditProfile,
+              onUploadDocument,
+              onSchoolMaterial,
+              onStartLearning,
+              onResetProfile,
+              onParentDashboard
+            });
+          } catch (err) {
+            console.error('Failed to save companion selection:', err);
+            const avatarData = AVAILABLE_AVATARS.find(a => a.id === companionId);
+            const newTheme = avatarData?.themeId || profile.theme;
+            document.body.setAttribute('data-theme', newTheme);
+            renderProfileOverviewScreen(container, {
+              profile: { ...profile, avatar: companionId, theme: newTheme },
+              onEditProfile,
+              onUploadDocument,
+              onSchoolMaterial,
+              onStartLearning,
+              onResetProfile,
+              onParentDashboard
+            });
+          }
+        },
+        onBack: () => {
+          // Return to profile overview
+          renderProfileOverviewScreen(container, {
+            profile,
+            onEditProfile,
+            onUploadDocument,
+            onSchoolMaterial,
+            onStartLearning,
+            onResetProfile,
+            onParentDashboard
+          });
+        }
+      });
+    } catch (err) {
+      console.error('Failed to render companion selection:', err?.stack || err);
     }
   });
 }

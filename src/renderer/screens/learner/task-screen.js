@@ -1,13 +1,34 @@
 import { AVAILABLE_AVATARS } from '../../../shared/profile-schema.js';
 import { TIME_LIMIT_MS } from '../../../services/screening/task-templates.js';
+import { mountCompanionWidget } from '../../components/companion/companion-widget.js';
+import {
+  mountStickerDecorations,
+  showCelebrationSticker,
+  companionIdFromProfile
+} from '../../components/stickers/sticker-layer.js';
 
 /**
  * Learner Screen L2: Task Screen
  * Renders one screening task with large, accessible answer options,
  * a visible-but-gentle timer, and brief feedback before advancing.
+ *
+ * Answer options are randomized to prevent position bias.
  */
 
 const FEEDBACK_DELAY_MS = 1500;
+
+/**
+ * Shuffle array using Fisher-Yates algorithm (deterministic with seed would be better,
+ * but random shuffle prevents position bias in testing).
+ */
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 export function renderTaskScreen(container, {
   profile,
@@ -19,13 +40,16 @@ export function renderTaskScreen(container, {
   const avatar = AVAILABLE_AVATARS.find(a => a.id === profile?.avatar) || { emoji: '🌟', label: 'Star' };
   const progressPct = totalTasks > 0 ? Math.round(((currentIndex) / totalTasks) * 100) : 0;
 
-  const optionButtons = task.options.map((opt, i) => `
+  // Randomize answer option order to prevent position bias
+  const randomizedOptions = shuffleArray(task.options);
+
+  const optionButtons = randomizedOptions.map((opt, i) => `
     <button
       type="button"
       class="option-btn option-enter"
       data-option="${opt}"
       data-index="${i}"
-      style="animation-delay: ${i * 0.06}s;"
+      style="animation-delay: ${i * 0.08}s;"
     >
       ${opt}
     </button>
@@ -33,6 +57,9 @@ export function renderTaskScreen(container, {
 
   container.innerHTML = `
     <div class="learner-container screen-enter" style="justify-content: flex-start; padding-top: var(--space-xl);">
+      <!-- Companion Hero Widget Host -->
+      <div class="learner-avatar" id="companion-hero-host" style="text-align: center; margin-bottom: var(--space-md);"></div>
+
       <div class="quest-progress">
         <div class="quest-progress-track">
           <div class="quest-progress-fill" id="progress-fill" style="width: ${progressPct}%;"></div>
@@ -43,7 +70,7 @@ export function renderTaskScreen(container, {
         </div>
       </div>
 
-      <div class="learner-card task-card-enter" style="margin-top: var(--space-md);">
+      <div class="learner-card task-card-enter task-card-premium" style="margin-top: var(--space-md);">
         <span class="task-category-badge">${categoryLabel(task.category)}</span>
 
         <div class="task-prompt" id="task-prompt">${task.prompt}</div>
@@ -67,6 +94,23 @@ export function renderTaskScreen(container, {
   const startedAt = Date.now();
   let timerInterval = null;
 
+  // Mount hero companion
+  mountCompanionWidget(container.querySelector('#companion-hero-host'), { variant: 'hero' });
+
+  // Scrapbook scatter around the screen edges + subtle corner stickers
+  // on the question card
+  mountStickerDecorations(container.querySelector('.learner-container') || container, {
+    companionId: companionIdFromProfile(profile),
+    placement: 'scrapbook'
+  });
+  const questionCard = container.querySelector('.learner-card');
+  if (questionCard) {
+    mountStickerDecorations(questionCard, {
+      companionId: companionIdFromProfile(profile),
+      placement: 'question'
+    });
+  }
+
   // Start gentle countdown timer
   timerInterval = setInterval(() => {
     const elapsed = Date.now() - startedAt;
@@ -89,7 +133,7 @@ export function renderTaskScreen(container, {
     // The main side recomputes the CORRECT position itself; this is only the
     // pick side of the bias audit.
     const selectedOptionIndex = selectedOption
-      ? task.options.indexOf(selectedOption)
+      ? randomizedOptions.indexOf(selectedOption)
       : null;
     onAnswer({
       taskId: task.id,
@@ -128,6 +172,12 @@ export function renderTaskScreen(container, {
         b.classList.add('is-muted');
       }
     });
+
+    if (isCorrect && questionCard) {
+      showCelebrationSticker(questionCard, {
+        companionId: companionIdFromProfile(profile)
+      });
+    }
 
     // Advance after brief feedback delay
     setTimeout(() => {

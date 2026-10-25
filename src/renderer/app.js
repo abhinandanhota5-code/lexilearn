@@ -1,7 +1,7 @@
 import { renderWelcomeScreen } from './screens/parent/welcome-screen.js';
 import { renderLearnerBasicsScreen } from './screens/parent/learner-basics-screen.js';
 import { renderProfileOverviewScreen } from './screens/parent/profile-overview-screen.js';
-import { renderParentDashboardScreen } from './screens/parent/parent-dashboard-screen.js';
+import { renderParentDashboardScreen, renderPinVerificationScreen } from './screens/parent/parent-dashboard-screen.js';
 import { renderDocumentUploadScreen } from './screens/parent/document-upload-screen.js';
 import { renderReviewConfirmScreen } from './screens/parent/review-confirm-screen.js';
 import { renderCurriculumSelectionScreen } from './screens/parent/curriculum-selection-screen.js';
@@ -14,15 +14,29 @@ import { renderMissionScreen } from './screens/learner/mission-screen.js';
 import { renderLearningActivityScreen, FEEDBACK_DELAY_MS } from './screens/learner/learning-activity-screen.js';
 import { renderLearningBreakScreen } from './screens/learner/learning-break-screen.js';
 import { renderMyDayScreen } from './screens/learner/my-day-screen.js';
+import { renderCompanionSelectionScreen } from './screens/learner/companion-selection-screen.js';
 import { renderSchoolworkReadScreen } from './screens/learner/schoolwork-read-screen.js';
+import { renderLessonSelectionScreen } from './screens/learner/lesson-selection-screen.js';
+import { renderLessonCompletionScreen } from './screens/learner/lesson-completion-screen.js';
 import { selectQuestTasks, getNextTask } from './../services/screening/quest-engine.js';
 import { mountCompanionWidget } from './components/companion/companion-widget.js';
 import { applyPresentationSettings } from './services/presentation-settings.js';
+import { AdaptiveLearningEngine } from '../services/learning/adaptive-engine.js';
+import { getActivityForLesson } from '../services/learning/curriculum.js';
+import { AVAILABLE_AVATARS } from '../shared/profile-schema.js';
 
 /**
  * Root Application Controller (Renderer)
  * Coordinates parent onboarding, document ingestion, screening quest, and profile management.
  */
+
+// Global error handlers for debugging
+window.addEventListener('error', (e) => {
+  console.error('Global error:', e.error?.stack || e.message);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled rejection:', e.reason?.stack || e.reason);
+});
 
 async function initApp() {
   const root = document.getElementById('app');
@@ -42,11 +56,21 @@ async function initApp() {
     // screen renders, so the first paint already uses their chosen typography.
     applyPresentationSettings(existingProfile?.accommodations);
 
+    // Apply the companion's visual theme to the document body so ALL screens
+    // (parent and child) immediately reflect the chosen world.
+    if (existingProfile?.theme) {
+      document.body.setAttribute('data-theme', existingProfile.theme);
+    }
+
     if (existingProfile && existingProfile.name) {
       // Route: if screening not yet completed, offer the screening quest
       if (existingProfile.screeningStatus === 'completed') {
         console.log('✅ Screening complete → showing profile overview');
-        showProfileOverview(existingProfile);
+        try {
+          showProfileOverview(existingProfile);
+        } catch (err) {
+          console.error('Failed to show profile overview:', err?.stack || err);
+        }
       } else {
         console.log('⏳ Screening pending → starting screening flow');
         startScreeningFlow(existingProfile);
@@ -74,33 +98,30 @@ async function initApp() {
         });
       },
       onParentDashboard: (prof) => {
-        renderParentDashboardScreen(root, {
+        // Show PIN verification screen first
+        const openDashboard = (p) => {
+          renderParentDashboardScreen(root, {
+            profile: p,
+            onEditProfile: (p2) => {
+              renderLearnerBasicsScreen(root, {
+                existingProfile: p2,
+                onSaved: (saved) => {
+                  applyPresentationSettings(saved?.accommodations);
+                  openDashboard(saved);
+                },
+                onBack: () => openDashboard(p2)
+              });
+            },
+            onBackToProfile: () => showProfileOverview(p),
+            onAccessibilitySettings: () => showProfileOverview(p),
+            onStartLearning: (p2) => startLearningFlow(p2),
+            onPinVerified: () => {}
+          });
+        };
+        renderPinVerificationScreen(root, {
           profile: prof,
-          onEditProfile: (p) => {
-            renderLearnerBasicsScreen(root, {
-              existingProfile: p,
-              onSaved: (saved) => {
-                applyPresentationSettings(saved?.accommodations);
-                renderParentDashboardScreen(root, {
-                  profile: saved,
-                  onEditProfile: arguments.callee,
-                  onBackToProfile: () => showProfileOverview(saved),
-                  onAccessibilitySettings: () => showProfileOverview(saved),
-                  onStartLearning: (p2) => startDailyDashboard(p2)
-                });
-              },
-              onBack: () => renderParentDashboardScreen(root, {
-                profile: p,
-                onEditProfile: arguments.callee,
-                onBackToProfile: () => showProfileOverview(p),
-                onAccessibilitySettings: () => showProfileOverview(p),
-                onStartLearning: (p2) => startDailyDashboard(p2)
-              })
-            });
-          },
-          onBackToProfile: () => showProfileOverview(prof),
-          onAccessibilitySettings: () => showProfileOverview(prof),
-          onStartLearning: (p) => startDailyDashboard(p)
+          onVerified: () => openDashboard(prof),
+          onBack: () => showProfileOverview(prof)
         });
       },
       onUploadDocument: (prof) => {
@@ -112,7 +133,7 @@ async function initApp() {
         startCurriculumSetupFlow(prof, () => showProfileOverview(prof));
       },
       onStartLearning: (prof) => {
-        startDailyDashboard(prof);
+        startLearningFlow(prof);
       },
       onResetProfile: () => {
         startSetupFlow();
@@ -126,10 +147,45 @@ async function initApp() {
         renderLearnerBasicsScreen(root, {
           authData,
           onSaved: (savedProfile) => {
-            // After initial profile basics are saved, offer optional document
-            // upload, then hand off to the child's screening quest.
-            startDocumentFlow(savedProfile, (finalProfile) => {
-              startScreeningFlow(finalProfile);
+            // After initial profile basics are saved, show companion selection
+            // then offer optional document upload, then hand off to screening quest.
+            renderCompanionSelectionScreen(root, {
+              profile: savedProfile,
+              onCompanionSelected: async (companionId) => {
+                // Save the selected companion (and matching world theme) to the profile
+                const avatarMeta = AVAILABLE_AVATARS.find((a) => a.id === companionId);
+                const companionPatch = {
+                  avatar: companionId,
+                  ...(avatarMeta?.themeId ? { theme: avatarMeta.themeId } : {})
+                };
+                try {
+                  const result = await window.electronAPI.saveProfile({
+                    ...savedProfile,
+                    ...companionPatch
+                  });
+                  const profileWithCompanion = result.success
+                    ? result.profile
+                    : { ...savedProfile, ...companionPatch };
+
+                  if (profileWithCompanion.theme) {
+                    document.body.setAttribute('data-theme', profileWithCompanion.theme);
+                  }
+
+                  // Now offer optional document upload, then screening quest
+                  startDocumentFlow(profileWithCompanion, (finalProfile) => {
+                    startScreeningFlow(finalProfile);
+                  });
+                } catch (err) {
+                  console.error('Failed to save companion selection:', err);
+                  // Continue anyway with the companion in memory
+                  startDocumentFlow({ ...savedProfile, ...companionPatch }, (finalProfile) => {
+                    startScreeningFlow(finalProfile);
+                  });
+                }
+              },
+              onBack: () => {
+                startSetupFlow();
+              }
             });
           },
           onBack: () => {
@@ -261,6 +317,11 @@ async function initApp() {
    */
   function startScreeningFlow(profile) {
     console.debug('LexiLearn Phase 1 DX: startScreeningFlow invoked', { learnerId: profile?.learnerId, name: profile?.name });
+
+    // Apply the companion's visual theme to the document body
+    if (profile?.theme) {
+      document.body.setAttribute('data-theme', profile.theme);
+    }
     const { tasks: questTasks } = selectQuestTasks(profile);
     const results = [];
     const usedTaskIds = new Set();
@@ -271,6 +332,7 @@ async function initApp() {
     // change. All events are fire-and-forget and non-blocking.
     const dockHost = document.createElement('div');
     dockHost.id = 'companion-dock-host';
+    document.querySelectorAll('#companion-dock-host').forEach((el) => el.remove());
     document.body.appendChild(dockHost);
     const dockWidget = mountCompanionWidget(dockHost, { variant: 'docked' });
 
@@ -435,7 +497,7 @@ async function initApp() {
     function disposeCompanion() {
       disposeHeroCompanion();
       if (dockWidget) dockWidget.dispose();
-      dockHost.remove();
+      document.querySelectorAll('#companion-dock-host').forEach((el) => el.remove());
     }
   }
 
@@ -472,6 +534,146 @@ async function initApp() {
   }
 
   /**
+   * Companion Selection Screen for existing learners (profile editing)
+   * Allows changing the companion/theme after initial setup
+   */
+  function startCompanionSelection(profile, onComplete) {
+    renderCompanionSelectionScreen(root, {
+      profile,
+      onCompanionSelected: async (companionId) => {
+        const avatarMeta = AVAILABLE_AVATARS.find((a) => a.id === companionId);
+        const companionPatch = {
+          avatar: companionId,
+          ...(avatarMeta?.themeId ? { theme: avatarMeta.themeId } : {})
+        };
+        try {
+          const result = await window.electronAPI.saveProfile({
+            ...profile,
+            ...companionPatch
+          });
+          const updatedProfile = result.success ? result.profile : { ...profile, ...companionPatch };
+          if (updatedProfile.theme) {
+            document.body.setAttribute('data-theme', updatedProfile.theme);
+          }
+          if (onComplete) onComplete(updatedProfile);
+          else showProfileOverview(updatedProfile);
+        } catch (err) {
+          console.error('Failed to save companion selection:', err);
+          if (onComplete) onComplete({ ...profile, ...companionPatch });
+          else showProfileOverview({ ...profile, ...companionPatch });
+        }
+      },
+      onBack: () => {
+        if (onComplete) onComplete(profile);
+        else showProfileOverview(profile);
+      }
+    });
+  }
+
+  /**
+   * Lesson-based learning flow (Feature 1)
+   * Child selects a lesson → practices activities → gets completion celebration → saves progress
+   */
+  async function startLessonFlow(profile, selectedLesson, onComplete) {
+    if (!selectedLesson) {
+      showProfileOverview(profile);
+      return;
+    }
+
+    const engine = new AdaptiveLearningEngine(profile);
+    let activitiesCompleted = 0;
+    const MAX_ACTIVITIES_PER_LESSON = 3;
+
+    function renderNextActivity() {
+      if (activitiesCompleted >= MAX_ACTIVITIES_PER_LESSON) {
+        // Lesson complete
+        completeLesson();
+        return;
+      }
+
+      const activity = getActivityForLesson(selectedLesson.id, activitiesCompleted);
+      if (!activity) {
+        completeLesson();
+        return;
+      }
+
+      renderLearningActivityScreen(root, {
+        profile,
+        plan: activity,
+        completedCount: activitiesCompleted,
+        goalActivities: MAX_ACTIVITIES_PER_LESSON,
+        onSubmit: async (payload) => {
+          // Simulate main-side answer grading
+          const isCorrect = payload.selectedOptionId === 'opt_2'; // Hardcoded for demo
+
+          engine.recordActivity({
+            activityId: activity.id,
+            lessonId: selectedLesson.id,
+            isCorrect,
+            attempts: payload.attempts || 1,
+            hintCount: payload.hintCount || 0,
+            responseTimeMs: payload.responseTimeMs || 0,
+            outcome: isCorrect ? 'success' : 'incorrect'
+          });
+
+          return { isCorrect, outcome: isCorrect ? 'success' : 'incorrect' };
+        },
+        onAdvance: async () => {
+          await settleFeedback();
+          activitiesCompleted += 1;
+          renderNextActivity();
+        }
+      });
+    }
+
+    function completeLesson() {
+      const summary = engine.getSummary();
+      renderLessonCompletionScreen(root, {
+        profile,
+        lesson: selectedLesson,
+        summary: {
+          activitiesCompleted,
+          accuracy: summary.accuracy,
+          totalTimeMs: summary.totalTimeMs
+        },
+        onContinue: () => {
+          // Save progress and return
+          if (onComplete) onComplete(profile);
+          else showProfileOverview(profile);
+        },
+        onSelectAnother: () => {
+          // Back to lesson selection
+          renderLessonSelectionScreen(root, {
+            profile,
+            onSelectLesson: (lesson) => startLessonFlow(profile, lesson, onComplete),
+            onBackToProfile: () => {
+              if (onComplete) onComplete(profile);
+              else showProfileOverview(profile);
+            }
+          });
+        }
+      });
+    }
+
+    renderNextActivity();
+  }
+
+  /**
+   * Lesson selection flow
+   * Child picks a lesson from the available curriculum
+   */
+  function startLessonSelection(profile, onComplete) {
+    renderLessonSelectionScreen(root, {
+      profile,
+      onSelectLesson: (lesson) => startLessonFlow(profile, lesson, onComplete),
+      onBackToProfile: () => {
+        if (onComplete) onComplete(profile);
+        else showProfileOverview(profile);
+      }
+    });
+  }
+
+  /**
    * Hold the learner on the answer they just gave for FEEDBACK_DELAY_MS so the
    * feedback is actually seen before the next activity replaces it. The
    * activity screen has already painted main's verdict when this runs; the
@@ -494,9 +696,15 @@ async function initApp() {
     let completedCount = 0;
     let flowActive = true;
 
+    // Apply the companion's visual theme to the document body
+    if (profile?.theme) {
+      document.body.setAttribute('data-theme', profile.theme);
+    }
+
     // Companion dock + hero hosts (Phase 5 pattern, reused unchanged).
     const dockHost = document.createElement('div');
     dockHost.id = 'companion-dock-host';
+    document.querySelectorAll('#companion-dock-host').forEach((el) => el.remove());
     document.body.appendChild(dockHost);
     const dockWidget = mountCompanionWidget(dockHost, { variant: 'docked' });
 
@@ -526,7 +734,7 @@ async function initApp() {
     function disposeCompanion() {
       disposeHeroCompanion();
       if (dockWidget) dockWidget.dispose();
-      dockHost.remove();
+      document.querySelectorAll('#companion-dock-host').forEach((el) => el.remove());
     }
 
     function returnHome(updatedProfile, deactivated = false) {
@@ -563,20 +771,25 @@ async function initApp() {
       return;
     }
 
-    renderMissionScreen(root, {
-      profile,
-      mission: {
-        plan: firstMission.plan,
-        goalActivities: GOAL_ACTIVITIES,
-        companionName: ''
-      },
-      onStart: () => {
-        disposeHeroCompanion();
-        emitCompanion('activity_started', {});
-        renderActivity(firstMission.plan);
-      }
-    });
-    mountHeroCompanion(root.querySelector('#companion-hero-host'));
+    try {
+      renderMissionScreen(root, {
+        profile,
+        mission: {
+          plan: firstMission.plan,
+          goalActivities: GOAL_ACTIVITIES,
+          companionName: ''
+        },
+        onStart: () => {
+          disposeHeroCompanion();
+          emitCompanion('activity_started', {});
+          renderActivity(firstMission.plan);
+        }
+      });
+      mountHeroCompanion(root.querySelector('#companion-hero-host'));
+    } catch (err) {
+      console.error('Failed to render mission screen:', err);
+      returnHome(profile);
+    }
 
     function renderActivity(plan) {
       // The single main-side response for THIS activity. The screen hands it
@@ -584,8 +797,16 @@ async function initApp() {
       // dwell and the advance are sequenced exactly once per activity.
       let pendingResponse = null;
 
-      renderLearningActivityScreen(root, {
-        profile,
+      // The mission screen's hero replaced the dock; restore the corner
+      // companion for screens that have no hero of their own.
+      if (!document.getElementById('companion-dock-host')) {
+        const host = document.createElement('div');
+        host.id = 'companion-dock-host';
+        document.body.appendChild(host);
+        mountCompanionWidget(host, { variant: 'docked' });
+      }
+
+      renderLearningActivityScreen(root, {        profile,
         plan,
         completedCount,
         goalActivities: GOAL_ACTIVITIES,
@@ -694,6 +915,11 @@ async function initApp() {
     let flowActive = true;
     let consecutiveWrong = 0;
 
+    // Apply the companion's visual theme to the document body
+    if (profile?.theme) {
+      document.body.setAttribute('data-theme', profile.theme);
+    }
+
     // Reading mode: nothing to evaluate — full-stop comprehension screen.
     if (session.mode === 'reading') {
       const close = () => {
@@ -732,6 +958,7 @@ async function initApp() {
 
     const dockHost = document.createElement('div');
     dockHost.id = 'companion-dock-host';
+    document.querySelectorAll('#companion-dock-host').forEach((el) => el.remove());
     document.body.appendChild(dockHost);
     const dockWidget = mountCompanionWidget(dockHost, { variant: 'docked' });
 
@@ -757,7 +984,7 @@ async function initApp() {
     function disposeCompanion() {
       disposeHeroCompanion();
       if (dockWidget) dockWidget.dispose();
-      dockHost.remove();
+      document.querySelectorAll('#companion-dock-host').forEach((el) => el.remove());
     }
 
     function renderActivity(plan) {

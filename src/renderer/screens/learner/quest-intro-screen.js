@@ -1,4 +1,6 @@
 import { AVAILABLE_AVATARS } from '../../../shared/profile-schema.js';
+import { mountCompanionWidget } from '../../components/companion/companion-widget.js';
+import { mountStickerDecorations, companionIdFromProfile } from '../../components/stickers/sticker-layer.js';
 
 /**
  * Learner Screen L1: Quest Intro
@@ -50,10 +52,18 @@ export function renderQuestIntroScreen(container, { profile, onStart }) {
   container.innerHTML = newHtml;
   console.debug('LexiLearn: QuestIntro rendered');
 
+  mountStickerDecorations(container.querySelector('.learner-container') || container, {
+    companionId: companionIdFromProfile(profile),
+    placement: 'scrapbook'
+  });
+
   const startBtn = container.querySelector('#quest-start-btn');
   startBtn.addEventListener('click', () => {
     startBtn.disabled = true;
     startBtn.textContent = 'Getting Ready...';
     onStart();
   });
+
+  // Mount hero companion after render
+  mountCompanionWidget(container.querySelector('#companion-hero-host'), { variant: 'hero' });
 }

@@ -4,6 +4,7 @@ import {
   GRADE_LEVELS, 
   DEFAULT_ACCOMMODATIONS 
 } from '../../../shared/profile-schema.js';
+import { companionCharacterArt } from '../../components/companion/companion-art.js';
 
 /**
  * Screen P2: Learner Profile Basics
@@ -11,7 +12,7 @@ import {
  */
 
 export function renderLearnerBasicsScreen(container, { authData, existingProfile, onSaved, onBack }) {
-  let selectedAvatar = existingProfile?.avatar || 'fox';
+  let selectedAvatar = existingProfile?.avatar || 'dinosaur';
   let selectedTheme = existingProfile?.theme || 'warm-parchment';
 
   // Apply initial theme live
@@ -21,29 +22,38 @@ export function renderLearnerBasicsScreen(container, { authData, existingProfile
     `<option value="${g}" ${existingProfile?.grade === g ? 'selected' : ''}>${g}</option>`
   ).join('');
 
+  // Labels carry a leading emoji in the schema; cards show the emoji large,
+  // so strip it from the name to avoid rendering it twice.
+  const displayName = (label) => String(label).replace(/^(\p{Extended_Pictographic}[\uFE0F]?\s*)+/u, '');
+
   const avatarCards = AVAILABLE_AVATARS.map(a => `
-    <button 
-      type="button" 
-      class="avatar-option ${selectedAvatar === a.id ? 'is-selected' : ''}" 
+    <button
+      type="button"
+      class="avatar-option ${selectedAvatar === a.id ? 'is-selected' : ''}"
       data-avatar="${a.id}"
-      aria-label="Choose ${a.label}"
+      aria-label="Choose ${displayName(a.label)}"
+      aria-pressed="${selectedAvatar === a.id}"
+      style="--avatar-color: ${a.color}"
     >
-      <span class="avatar-emoji">${a.emoji}</span>
-      <span class="avatar-label">${a.label}</span>
+      <span class="avatar-character">${companionCharacterArt(a.id, { size: 96 })}</span>
+      <span class="avatar-label">${displayName(a.label)}</span>
+      <span class="avatar-personality">${a.personality}</span>
+      ${selectedAvatar === a.id ? '<span class="avatar-check" aria-hidden="true">✓</span>' : ''}
     </button>
   `).join('');
 
-  const themeCards = AVAILABLE_THEMES.map(t => `
-    <button 
-      type="button" 
-      class="theme-option ${selectedTheme === t.id ? 'is-selected' : ''}" 
-      data-theme="${t.id}"
-      aria-label="Select ${t.name} theme"
-    >
-      <span class="theme-swatch-circle" style="background-color: ${t.bg};"></span>
-      <span class="theme-name">${t.name}</span>
-    </button>
-  `).join('');
+  // Theme preview follows the chosen companion (theme is derived from avatar).
+  function worldPreviewHTML(avatarId) {
+    const avatarData = AVAILABLE_AVATARS.find(a => a.id === avatarId);
+    const preview = AVAILABLE_THEMES.find(t => t.id === avatarData?.themeId) || AVAILABLE_THEMES[0];
+    return `
+      <div class="world-preview" style="background: ${preview.bg}; border-color: ${preview.color || 'rgba(0,0,0,0.15)'};">
+        <div class="world-preview-emoji">${companionCharacterArt(avatarId, { size: 88 })}</div>
+        <div class="world-preview-name">${preview.name}</div>
+        <div class="world-preview-desc">${preview.description}</div>
+      </div>
+    `;
+  }
 
   container.innerHTML = `
     <div class="parent-container">
@@ -109,11 +119,9 @@ export function renderLearnerBasicsScreen(container, { authData, existingProfile
           </div>
 
           <div class="form-group">
-            <label class="form-label">Select a Visual Color Theme</label>
-            <span class="form-hint">Muted background tones reduce visual glare and reading fatigue. Tap to preview live:</span>
-            <div class="theme-grid" id="theme-container">
-              ${themeCards}
-            </div>
+            <label class="form-label">Your Companion's World</label>
+            <span class="form-hint">Your companion choice determines the complete visual theme of the app.</span>
+            <div id="world-preview-host">${worldPreviewHTML(selectedAvatar)}</div>
             <div id="theme-error" class="field-error" style="display: none;"></div>
           </div>
 
@@ -169,22 +177,22 @@ export function renderLearnerBasicsScreen(container, { authData, existingProfile
   const gradeError = container.querySelector('#grade-error');
   const generalError = container.querySelector('#general-error');
 
-  // Avatar Selection Handlers
+  // Avatar Selection Handlers — update in place so typed form values survive.
   container.querySelectorAll('.avatar-option').forEach(btn => {
     btn.addEventListener('click', () => {
-      container.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('is-selected'));
-      btn.classList.add('is-selected');
-      selectedAvatar = btn.getAttribute('data-avatar');
-    });
-  });
-
-  // Theme Selection Handlers (Instant Live Preview!)
-  container.querySelectorAll('.theme-option').forEach(btn => {
-    btn.addEventListener('click', () => {
-      container.querySelectorAll('.theme-option').forEach(b => b.classList.remove('is-selected'));
-      btn.classList.add('is-selected');
-      selectedTheme = btn.getAttribute('data-theme');
-      document.body.setAttribute('data-theme', selectedTheme);
+      const id = btn.getAttribute('data-avatar');
+      if (id === selectedAvatar) return;
+      selectedAvatar = id;
+      container.querySelectorAll('.avatar-option').forEach(b => {
+        const on = b === btn;
+        b.classList.toggle('is-selected', on);
+        b.setAttribute('aria-pressed', String(on));
+        const check = b.querySelector('.avatar-check');
+        if (on && !check) b.insertAdjacentHTML('beforeend', '<span class="avatar-check" aria-hidden="true">✓</span>');
+        if (!on && check) check.remove();
+      });
+      const previewHost = container.querySelector('#world-preview-host');
+      if (previewHost) previewHost.innerHTML = worldPreviewHTML(selectedAvatar);
     });
   });
 
@@ -230,14 +238,16 @@ export function renderLearnerBasicsScreen(container, { authData, existingProfile
       hasClientError = true;
     }
 
-    if (hasClientError) return;
+    // Use companion's theme ID instead of separate theme selection
+    const selectedAvatarData = AVAILABLE_AVATARS.find(a => a.id === selectedAvatar);
+    const finalTheme = selectedAvatarData?.themeId || 'dinosaur-world';
 
     const payload = {
       name: nameInput.value.trim(),
       age: ageVal,
       grade: gradeSelect.value,
       avatar: selectedAvatar,
-      theme: selectedTheme,
+      theme: finalTheme,
       parentPinHash: authData?.parentPinHash || existingProfile?.parentPinHash,
       parentPinSalt: authData?.parentPinSalt || existingProfile?.parentPinSalt,
       disclaimerAccepted: true,

@@ -4,7 +4,8 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
     "start": "electron ."
   },
   "keywords": [],
@@ -12,9 +13,13 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "electron": "^44.4.1"
+    "@vitest/ui": "^5.0.5",
+    "electron": "^44.4.1",
+    "happy-dom": "^21.0.4",
+    "vitest": "^5.0.5"
   },
   "dependencies": {
+    "chart.js": "^4.6.1",
     "ollama": "^0.6.3",
     "pdf-parse": "^2.4.5"
   }

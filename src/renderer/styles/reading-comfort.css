@@ -1,0 +1,250 @@
+/**
+ * Reading Comfort — color themes + learner settings panel styles.
+ * Applied via body[data-reading-color], independent of the companion world
+ * theme (body[data-theme]). Loaded after tokens.css so these win.
+ */
+
+/* ─── Reading color themes ───────────────────────────────────────── */
+
+body[data-reading-color="cream"] {
+  --color-bg-primary: #FDF6E3;
+  --color-bg-surface: #FEFAEF;
+  --color-bg-card: #F6EBD2;
+  --color-text-primary: #3D3222;
+  --color-text-secondary: #6B5D45;
+  --color-border: #DCC9A6;
+  --color-border-subtle: #EADFC6;
+}
+
+body[data-reading-color="light"] {
+  --color-bg-primary: #FBFBFD;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-card: #EFF2F7;
+  --color-text-primary: #1F2937;
+  --color-text-secondary: #4B5563;
+  --color-border: #CBD5E1;
+  --color-border-subtle: #E2E8F0;
+}
+
+body[data-reading-color="dark"] {
+  --color-bg-primary: #171B24;
+  --color-bg-surface: #212633;
+  --color-bg-card: #2A3040;
+  --color-text-primary: #ECEFF5;
+  --color-text-secondary: #B4BCCD;
+  --color-border: #3C4458;
+  --color-border-subtle: #303748;
+}
+
+body[data-reading-color="high-contrast"] {
+  --color-bg-primary: #000000;
+  --color-bg-surface: #0A0A0A;
+  --color-bg-card: #141414;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #F5F5F5;
+  --color-border: #FFFFFF;
+  --color-border-subtle: #CFCFCF;
+  --color-accent: #7CB9FF;
+  --color-accent-hover: #5AA7FF;
+  --color-success: #5AE07F;
+  --color-error: #FF7A7A;
+}
+
+/* Surfaces that hardcode white-ish backgrounds follow the theme instead */
+body[data-reading-color="dark"] .learner-card,
+body[data-reading-color="dark"] .parent-card,
+body[data-reading-color="high-contrast"] .learner-card,
+body[data-reading-color="high-contrast"] .parent-card {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+
+body[data-reading-color="dark"] .task-option,
+body[data-reading-color="high-contrast"] .task-option {
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+
+body[data-reading-color="high-contrast"] .learner-card,
+body[data-reading-color="high-contrast"] .parent-card,
+body[data-reading-color="high-contrast"] .task-option {
+  border-width: 3px;
+}
+
+/* Sticker scatter steps back for calm reading themes */
+body[data-reading-color="dark"] .sticker-layer,
+body[data-reading-color="high-contrast"] .sticker-layer {
+  opacity: 0.25;
+}
+
+/* ─── Reading comfort panel (learner-facing) ─────────────────────── */
+
+.reading-comfort-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 95;
+  animation: help-fade-in 0.25s ease both;
+}
+
+.reading-comfort-panel {
+  background-color: var(--color-bg-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  padding: var(--space-lg);
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(82vh, 680px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  text-align: center;
+}
+
+.reading-comfort-title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.reading-comfort-section {
+  text-align: left;
+}
+
+.reading-comfort-label {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-xs);
+}
+
+.reading-comfort-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.rc-chip {
+  min-height: 48px;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: 14px;
+  border: 2px solid var(--color-border);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.rc-chip:hover { border-color: var(--color-accent); transform: translateY(-1px); }
+.rc-chip:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
+.rc-chip.is-selected {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+}
+
+.rc-swatch {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  border: 3px solid var(--color-border);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: var(--font-family-display);
+}
+
+.rc-swatch.is-selected { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35); }
+.rc-swatch:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
+
+.rc-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  border: 2px solid var(--color-border);
+  border-radius: 14px;
+  padding: 4px 8px;
+  background-color: var(--color-bg-primary);
+}
+
+.rc-stepper button {
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.rc-stepper button:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
+
+.rc-stepper output {
+  min-width: 56px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.reading-comfort-footer {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rc-reset-btn {
+  min-height: 48px;
+  padding: 0 var(--space-md);
+  border-radius: 14px;
+  border: 2px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-display);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rc-done-btn {
+  min-height: 48px;
+  padding: 0 var(--space-lg);
+  border-radius: 14px;
+  border: none;
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-family: var(--font-family-display);
+  font-weight: 800;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.rc-save-state {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  min-height: 1.2em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reading-comfort-overlay { animation: none; }
+  .rc-chip:hover, .rc-swatch { transform: none; }
+}

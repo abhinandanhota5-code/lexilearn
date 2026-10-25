@@ -1,6 +1,44 @@
 /* ═══ Companion System — Animations & Widget Styling ═════════════════
    Interactive learning companion. Subtle, bounded, reduced-motion friendly. */
 
+/* ─── CSS Custom Properties for Theme-Aware Animations ──────────────── */
+
+:root {
+  /* Racing Car (racing-car) - Red/Pink theme */
+  --companion-color-racing-car: #E94560;
+  --companion-color-racing-car-secondary: #FF6B8A;
+  --companion-gradient-racing-car: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #E94560 100%);
+
+  /* Dinosaur (dinosaur) - Green theme */
+  --companion-color-dinosaur: #8BC34A;
+  --companion-color-dinosaur-secondary: #A5D6A7;
+  --companion-gradient-dinosaur: linear-gradient(135deg, #2d5016 0%, #5a7d3d 50%, #8BC34A 100%);
+
+  /* Ocean Friends (ocean-friends) - Teal/Blue theme */
+  --companion-color-ocean-friends: #00BCD4;
+  --companion-color-ocean-friends-secondary: #4DD0E1;
+  --companion-gradient-ocean-friends: linear-gradient(135deg, #0a3d62 0%, #1a5f7a 50%, #00BCD4 100%);
+}
+
+/* Apply theme colors when body has data-theme attribute */
+[data-theme="racing-world"] {
+  --companion-accent: var(--companion-color-racing-car);
+  --companion-accent-secondary: var(--companion-color-racing-car-secondary);
+  --companion-gradient: var(--companion-gradient-racing-car);
+}
+
+[data-theme="dinosaur-world"] {
+  --companion-accent: var(--companion-color-dinosaur);
+  --companion-accent-secondary: var(--companion-color-dinosaur-secondary);
+  --companion-gradient: var(--companion-gradient-dinosaur);
+}
+
+[data-theme="ocean-world"] {
+  --companion-accent: var(--companion-color-ocean-friends);
+  --companion-accent-secondary: var(--companion-color-ocean-friends-secondary);
+  --companion-gradient: var(--companion-gradient-ocean-friends);
+}
+
 /* ─── Layout ─────────────────────────────────────────────────────── */
 
 .companion-widget-host {
@@ -14,6 +52,24 @@
   bottom: var(--space-lg, 24px);
   z-index: 50;
   pointer-events: none;
+}
+
+/* Responsive: on small screens, move docked companion to avoid overlapping */
+@media (max-width: 600px) {
+  .companion-widget-docked {
+    right: var(--space-md, 16px);
+    bottom: var(--space-xl, 32px); /* Move up to avoid bottom navigation/buttons */
+    transform: scale(0.85);
+    transform-origin: bottom right;
+  }
+}
+
+@media (max-width: 480px) {
+  .companion-widget-docked {
+    right: var(--space-sm, 12px);
+    bottom: var(--space-2xl, 48px);
+    transform: scale(0.75);
+  }
 }
 
 /* Hero: large inline companion used on the quest intro */
@@ -42,6 +98,12 @@
 
 .companion-widget-hero .companion-avatar {
   font-size: 112px;
+}
+
+/* Character art scales with the avatar's font-size per variant */
+.companion-avatar .companion-art {
+  width: 1.35em !important;
+  height: 1.35em !important;
 }
 
 .companion-entity {
@@ -90,31 +152,177 @@
   80%      { transform: rotate(3deg); }
 }
 
-.companion-idle {
-  animation: companion-breathing 3.2s ease-in-out infinite;
+/* Racing Car specific animations */
+@keyframes racing-car-idle {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-4px) rotate(-1deg); }
+  50% { transform: translateX(4px) rotate(1deg); }
+  75% { transform: translateX(-2px) rotate(-0.5deg); }
 }
 
-.companion-listening {
-  animation: companion-tilting 2.4s ease-in-out infinite;
+@keyframes racing-car-vroom {
+  0% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-8px) rotate(-2deg); }
+  40% { transform: translateX(16px) rotate(1deg); }
+  60% { transform: translateX(-4px) rotate(-1deg); }
+  80% { transform: translateX(8px) rotate(2deg); }
+  100% { transform: translateX(0) rotate(0deg); }
 }
 
-.companion-thinking {
-  animation: companion-thinking-pulse 0.9s ease-in-out infinite;
+@keyframes racing-car-victory {
+  0% { transform: translateX(0) rotate(0deg) scale(1); }
+  20% { transform: translateX(-12px) rotate(-4deg) scale(1.1); }
+  40% { transform: translateX(24px) rotate(2deg) scale(1.15); }
+  60% { transform: translateX(-8px) rotate(-1deg) scale(1.1); }
+  80% { transform: translateX(12px) rotate(2deg) scale(1.05); }
+  100% { transform: translateX(0) rotate(0deg) scale(1); }
 }
 
-.companion-encouraging {
-  animation: companion-bounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+@keyframes racing-car-wobble {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-6px) rotate(-3deg); }
+  50% { transform: translateX(6px) rotate(3deg); }
+  75% { transform: translateX(-3px) rotate(-1.5deg); }
 }
 
-.companion-celebrating {
-  animation: companion-celebrate 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+@keyframes racing-car-victory-lap {
+  0% { transform: translateX(0) rotate(0deg) scale(1); }
+  25% { transform: translateX(-16px) rotate(-6deg) scale(1.1); }
+  50% { transform: translateX(32px) rotate(4deg) scale(1.2); }
+  75% { transform: translateX(-8px) rotate(-2deg) scale(1.1); }
+  100% { transform: translateX(0) rotate(0deg) scale(1); }
 }
 
-/* Helping persists "until the learner responds", which is longer than one
-   wobble — so it holds its last keyframe instead of snapping back to rest. */
-.companion-helping {
-  animation: companion-wobble 1.1s ease-in-out forwards;
+@keyframes racing-car-pit-stop {
+  0% { transform: translateX(0) rotate(0deg) scale(1); }
+  33% { transform: translateX(-8px) rotate(-2deg) scale(0.95); }
+  66% { transform: translateX(8px) rotate(2deg) scale(1.05); }
+  100% { transform: translateX(0) rotate(0deg) scale(1); }
 }
+
+@keyframes racing-car-head-tilt {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  50% { transform: translateX(4px) rotate(4deg); }
+}
+
+/* Dinosaur specific animations */
+@keyframes dinosaur-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(0.5deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-3px) rotate(-0.5deg); }
+}
+
+@keyframes dinosaur-happy-chomp {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-12px) rotate(2deg) scale(1.1); }
+  40% { transform: translateY(-4px) rotate(-1deg) scale(1.05); }
+  60% { transform: translateY(-10px) rotate(1.5deg) scale(1.1); }
+  80% { transform: translateY(-2px) rotate(-0.5deg) scale(1.02); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+@keyframes dinosaur-concerned {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(4px) rotate(-2deg) scale(0.98); }
+  66% { transform: translateY(-2px) rotate(1.5deg) scale(1.02); }
+}
+
+@keyframes dinosaur-roar {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-16px) rotate(4deg) scale(1.15); }
+  40% { transform: translateY(-6px) rotate(-2deg) scale(1.05); }
+  60% { transform: translateY(-14px) rotate(3deg) scale(1.15); }
+  80% { transform: translateY(-4px) rotate(-0.5deg) scale(1.05); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+@keyframes dinosaur-tail-wag {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4px) rotate(2deg); }
+  50% { transform: translateY(0) rotate(-1.5deg); }
+  75% { transform: translateY(-2px) rotate(1.5deg); }
+}
+
+@keyframes dinosaur-head-tilt {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(4deg); }
+}
+
+/* Ocean Friends (Octopus) specific animations */
+@keyframes ocean-friends-idle {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+  25% { transform: translateY(-4px) translateX(2px) rotate(0.5deg); }
+  50% { transform: translateY(-2px) translateX(-2px) rotate(-0.5deg); }
+  75% { transform: translateY(-6px) translateX(1px) rotate(0.5deg); }
+}
+
+@keyframes ocean-friends-treasure-find {
+  0% { transform: translateY(0) translateX(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-12px) translateX(4px) rotate(1.5deg) scale(1.1); }
+  40% { transform: translateY(-4px) translateX(-4px) rotate(-1.5deg) scale(1.05); }
+  60% { transform: translateY(-16px) translateX(6px) rotate(2.5deg) scale(1.15); }
+  80% { transform: translateY(-6px) translateX(-2px) rotate(-0.5deg) scale(1.05); }
+  100% { transform: translateY(0) translateX(0) rotate(0deg) scale(1); }
+}
+
+@keyframes ocean-friends-gentle-float {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+  33% { transform: translateY(2px) translateX(-1.5px) rotate(-1.5deg) scale(0.98); }
+  66% { transform: translateY(-1.5px) translateX(1.5px) rotate(0.5deg) scale(1.02); }
+}
+
+@keyframes ocean-friends-ink-burst {
+  0% { transform: translateY(0) translateX(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-10px) translateX(0) rotate(0deg) scale(1.2); }
+  40% { transform: translateY(-6px) translateX(4px) rotate(2deg) scale(1.1); }
+  60% { transform: translateY(-12px) translateX(-4px) rotate(-2deg) scale(1.15); }
+  80% { transform: translateY(-4px) translateX(2px) rotate(0.5deg) scale(1.05); }
+  100% { transform: translateY(0) translateX(0) rotate(0deg) scale(1); }
+}
+
+@keyframes ocean-friends-wave {
+  0% { transform: translateY(0) rotate(0deg); }
+  20% { transform: translateY(-8px) rotate(2deg); }
+  40% { transform: translateY(-4px) rotate(-1.5deg); }
+  60% { transform: translateY(-10px) rotate(1.5deg); }
+  80% { transform: translateY(-2px) rotate(-0.5deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes ocean-friends-bubble {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+  50% { transform: translateY(-8px) translateX(3px) rotate(1.5deg); }
+}
+
+/* Map companion states to animations */
+.companion-idle { animation: companion-breathing 3.2s ease-in-out infinite; }
+.companion-listening { animation: companion-tilting 2.4s ease-in-out infinite; }
+.companion-thinking { animation: companion-thinking-pulse 0.9s ease-in-out infinite; }
+.companion-encouraging { animation: companion-bounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+.companion-celebrating { animation: companion-celebrate 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+.companion-helping { animation: companion-wobble 1.1s ease-in-out forwards; }
+
+/* Theme-specific idle animations */
+.companion-entity.racing-car.companion-idle { animation: racing-car-idle 3s ease-in-out infinite; }
+.companion-entity.dinosaur.companion-idle { animation: dinosaur-idle 3s ease-in-out infinite; }
+.companion-entity.ocean-friends.companion-idle { animation: ocean-friends-idle 3s ease-in-out infinite; }
+
+.companion-entity.racing-car.companion-listening { animation: racing-car-vroom 2s ease-in-out infinite; }
+.companion-entity.dinosaur.companion-listening { animation: dinosaur-head-tilt 2s ease-in-out infinite; }
+.companion-entity.ocean-friends.companion-listening { animation: ocean-friends-wave 2s ease-in-out infinite; }
+
+.companion-entity.racing-car.companion-encouraging { animation: racing-car-victory 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.companion-entity.dinosaur.companion-encouraging { animation: dinosaur-happy-chomp 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.companion-entity.ocean-friends.companion-encouraging { animation: ocean-friends-treasure-find 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.companion-entity.racing-car.companion-celebrating { animation: racing-car-victory-lap 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.companion-entity.dinosaur.companion-celebrating { animation: dinosaur-roar 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.companion-entity.ocean-friends.companion-celebrating { animation: ocean-friends-ink-burst 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.companion-entity.racing-car.companion-helping { animation: racing-car-pit-stop 1.1s ease-in-out forwards; }
+.companion-entity.dinosaur.companion-helping { animation: dinosaur-tail-wag 1.1s ease-in-out forwards; }
+.companion-entity.ocean-friends.companion-helping { animation: ocean-friends-bubble 1.1s ease-in-out forwards; }
 
 /* ─── Speech Bubble (non-blocking, auto-dismissed) ───────────────── */
 
@@ -156,16 +364,6 @@
 .companion-bubble.is-visible {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
-}
-
-.companion-bubble::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 8px solid transparent;
-  border-top-color: var(--color-surface, #ffffff);
 }
 
 .companion-avatar + .companion-bubble {

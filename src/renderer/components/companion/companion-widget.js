@@ -1,4 +1,5 @@
 import { mountCompanionBubble } from './companion-bubble.js';
+import { companionCharacterArt, COMPANION_ART_IDS } from './companion-art.js';
 
 /**
  * Companion Widget — interactive learning companion (not a decorative avatar).
@@ -31,6 +32,23 @@ const STATE_ANIMATION_CLASSES = {
 export function mountCompanionWidget(host, options = {}) {
   const variant = options.variant === 'hero' ? 'hero' : 'docked';
 
+  // One widget per host: screens and the app router both mount into
+  // #companion-hero-host — a second mount would double the character.
+  if (host.__companionWidget) {
+    return host.__companionWidget;
+  }
+
+  // Exactly one companion on screen: any previous widget (dock or hero,
+  // including stale hosts left by My Day or the mission screen) is disposed.
+  document.querySelectorAll('.companion-widget-host').forEach((el) => {
+    if (el === host) return;
+    try { el.__companionWidget?.dispose(); } catch { /* already gone */ }
+    el.remove();
+  });
+  document.querySelectorAll('#companion-dock-host').forEach((el) => {
+    if (el !== host && !el.isConnected) el.remove();
+  });
+
   host.classList.add('companion-widget-host');
   host.classList.add(`companion-widget-${variant}`);
 
@@ -49,13 +67,16 @@ export function mountCompanionWidget(host, options = {}) {
   let disposed = false;
   let _lastAnimClass = null;
 
-  const removeListener = window.electronAPI.onCompanionStateChanged((snapshot) => {
-    if (disposed) return;
-    applySnapshot(snapshot);
-  });
+  const removeListener = window.electronAPI?.onCompanionStateChanged
+    ? window.electronAPI.onCompanionStateChanged((snapshot) => {
+        if (disposed) return;
+        applySnapshot(snapshot);
+      })
+    : () => {};
 
   async function loadInitial() {
     try {
+      if (!window.electronAPI?.getCompanionSnapshot) return;
       const snapshot = await window.electronAPI.getCompanionSnapshot();
       if (disposed) return;
       if (snapshot) applySnapshot(snapshot, /* force */ true);
@@ -72,7 +93,18 @@ export function mountCompanionWidget(host, options = {}) {
     currentSeq = snapshot.seq;
 
     const emoji = snapshot.avatar?.emoji || '🌟';
-    avatarEl.textContent = emoji;
+    const animType = snapshot.avatar?.animationType || 'dinosaur';
+    const companionId = snapshot.avatar?.id;
+    const art = COMPANION_ART_IDS.includes(companionId) ? companionCharacterArt(companionId) : '';
+    if (art) {
+      avatarEl.innerHTML = art;
+    } else {
+      avatarEl.textContent = emoji;
+    }
+
+    // Update the companion type class for theme-specific animations
+    avatarEl.classList.remove('racing-car', 'dinosaur', 'ocean-friends');
+    avatarEl.classList.add(animType);
 
     const animClass = STATE_ANIMATION_CLASSES[snapshot.state] || 'companion-idle';
     // Only remove the previous state animation class — never remove the base
@@ -88,7 +120,7 @@ export function mountCompanionWidget(host, options = {}) {
 
   loadInitial();
 
-  return {
+  const handle = {
     snapshot: () => latestSnapshot,
     dispose() {
       disposed = true;
@@ -97,6 +129,9 @@ export function mountCompanionWidget(host, options = {}) {
       root.remove();
       host.classList.remove('companion-widget-host');
       host.classList.remove(`companion-widget-${variant}`);
+      if (host.__companionWidget === handle) delete host.__companionWidget;
     }
   };
+  host.__companionWidget = handle;
+  return handle;
 }

@@ -1,3 +1,6 @@
+import { mountCompanionWidget } from '../../components/companion/companion-widget.js';
+import { mountStickerDecorations } from '../../components/stickers/sticker-layer.js';
+
 /**
  * Learner Screen M2b: Schoolwork Reading (Phase 7.2)
  *
@@ -48,11 +51,35 @@ export function renderSchoolworkReadScreen(container, {
   const doneBtn = container.querySelector('#schoolwork-read-done');
   if (doneBtn && onFinish) doneBtn.addEventListener('click', () => onFinish());
 
+  mountStickerDecorations(container.querySelector('.learner-container') || container, {
+    companionId: profile?.avatar || null,
+    placement: 'scrapbook'
+  });
+
   const backBtn = container.querySelector('#schoolwork-read-back');
   if (backBtn && onBack) backBtn.addEventListener('click', () => onBack());
 
+  // Mount docked companion
+  mountDockedCompanion(profile);
+
   void profile;
   void READ_COMPLETE_COPY;
+}
+
+function mountDockedCompanion(profile) {
+  // Remove any existing docked companion
+  const existingHost = document.getElementById('companion-dock-host');
+  if (existingHost) {
+    existingHost.remove();
+  }
+
+  // Create new dock host
+  const dockHost = document.createElement('div');
+  dockHost.id = 'companion-dock-host';
+  document.body.appendChild(dockHost);
+
+  // Mount the docked companion
+  mountCompanionWidget(dockHost, { variant: 'docked' });
 }
 
 function renderExcerpts(chunks) {
@@ -67,9 +94,9 @@ function renderExcerpts(chunks) {
 
 function escapeHtml(value) {
   return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&apos;');
 }

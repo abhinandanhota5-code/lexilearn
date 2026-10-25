@@ -12,6 +12,8 @@
 
 import { renderPESuggestionCard, showPESuccessState, showPEDismissalState } from '../../components/pe-suggestion-card.js';
 import { peIntegration } from '../../services/pe-integration.js';
+import { mountCompanionWidget } from '../../components/companion/companion-widget.js';
+import { mountStickerDecorations, companionIdFromProfile } from '../../components/stickers/sticker-layer.js';
 
 const MISSION_MESSAGES = {
   ready: {
@@ -33,9 +35,9 @@ const MISSION_MESSAGES = {
     button: null
   },
   done_today: {
-    emoji: '🎉',
-    heading: 'Amazing Work Today!',
-    subtitle: 'You\'ve completed your mission. Great job! 🌟',
+    emoji: '🏆',
+    heading: 'Amazing work today!',
+    subtitle: 'You finished your mission — that is how champions practice. Come back tomorrow and your next adventure will be waiting! 🌟',
     button: null
   }
 };
@@ -68,7 +70,7 @@ export function renderMyDayScreen(container, {
       </div>
 
       <!-- PRIMARY: Mission Card (always focal point) -->
-      <div class="myday-main-card task-card-enter">
+      <div class="myday-main-card task-card-enter${showMissionBtn ? '' : ' myday-main-card--rest'}">
         <div class="myday-mission-icon">${missionData.emoji}</div>
         <h2 class="myday-mission-heading">${missionData.heading}</h2>
         <p class="myday-mission-subtitle">${missionData.subtitle}</p>
@@ -76,7 +78,7 @@ export function renderMyDayScreen(container, {
           <button type="button" class="learner-btn-primary" id="myday-practice-btn">
             ${missionData.button}
           </button>
-        ` : ''}
+        ` : '<div class="myday-rest-strip" aria-hidden="true">⭐ 🌈 📚 💙 </div>'}
       </div>
   `;
 
@@ -101,6 +103,13 @@ export function renderMyDayScreen(container, {
 
   container.innerHTML = html;
 
+  // Companion-themed decorative stickers (from saved profile.avatar)
+  const homeRoot = container.querySelector('.myday-container') || container;
+  mountStickerDecorations(homeRoot, {
+    companionId: companionIdFromProfile(profile),
+    placement: 'scrapbook'
+  });
+
   // Wire event handlers
   const practiceBtn = container.querySelector('#myday-practice-btn');
   if (practiceBtn && onStartPractice) {
@@ -118,6 +127,25 @@ export function renderMyDayScreen(container, {
 
   // Load PE suggestions async (low priority)
   loadPESuggestions(container, profile);
+
+  // Mount docked companion for my-day screen
+  mountDockedCompanion(profile);
+}
+
+function mountDockedCompanion(profile) {
+  // Remove any existing docked companion
+  const existingHost = document.getElementById('companion-dock-host');
+  if (existingHost) {
+    existingHost.remove();
+  }
+
+  // Create new dock host
+  const dockHost = document.createElement('div');
+  dockHost.id = 'companion-dock-host';
+  document.body.appendChild(dockHost);
+
+  // Mount the docked companion
+  mountCompanionWidget(dockHost, { variant: 'docked' });
 }
 
 function renderSchoolworkList(items) {

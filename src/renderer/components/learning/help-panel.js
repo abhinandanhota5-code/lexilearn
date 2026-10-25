@@ -19,16 +19,21 @@
  */
 
 import { mountVisualExplanation } from './visual-explanation.js';
+import { helpOptionIcon } from './help-icons.js';
 
-const HELP_KIND_LABELS = Object.freeze({
-  show_me: 'Show me 👀',
-  tell_me: 'Tell me 🗣️',
-  break_it_down: 'Break it down 🧩',
-  give_example: 'Give me an example 💡',
-  make_simpler: 'Make it simpler 🪶',
-  funny_example: 'Funny example 😄',
-  real_life_example: 'Real-life example 🌍'
-});
+const HELP_OPTIONS = Object.freeze([
+  { kind: 'show_me', label: 'Show me', caption: 'See it move in a little scene' },
+  { kind: 'tell_me', label: 'Tell me', caption: 'Hear it said out loud' },
+  { kind: 'break_it_down', label: 'Break it down', caption: 'One small step at a time' },
+  { kind: 'give_example', label: 'Give me an example', caption: 'A word just like it' },
+  { kind: 'make_simpler', label: 'Make it simpler', caption: 'Smaller and easier' },
+  { kind: 'funny_example', label: 'Funny example', caption: 'Silly and memorable' },
+  { kind: 'real_life_example', label: 'Real-life example', caption: 'Somewhere you can see it' }
+]);
+
+const HELP_KIND_LABELS = Object.freeze(
+  HELP_OPTIONS.reduce((acc, o) => { acc[o.kind] = o.label; return acc; }, {})
+);
 
 const VISUAL_KIND_LABELS = Object.freeze({
   break_it_down: 'Imagine It step by step ✨',
@@ -54,8 +59,16 @@ export function mountHelpPanel(container, { activityId, learnerId = null, sessio
     <div class="help-panel" role="dialog" aria-modal="true" aria-label="Help options">
       <h2 class="help-panel-title">How can we look at this together?</h2>
       <div class="help-options">
-        ${Object.entries(HELP_KIND_LABELS)
-          .map(([kind, label]) => `<button type="button" class="help-option-btn" data-kind="${kind}">${label}</button>`)
+        ${HELP_OPTIONS
+          .map((o) => `
+            <button type="button" class="help-option-btn" data-kind="${o.kind}" aria-label="${o.label} — ${o.caption}">
+              <span class="help-option-icon">${helpOptionIcon(o.kind)}</span>
+              <span class="help-option-text">
+                <span class="help-option-label">${o.label}</span>
+                <span class="help-option-caption">${o.caption}</span>
+              </span>
+              <span class="help-option-thinking" aria-hidden="true"><i></i><i></i><i></i></span>
+            </button>`)
           .join('')}
       </div>
       <div class="help-content is-empty" id="help-content">
@@ -154,8 +167,6 @@ export function mountHelpPanel(container, { activityId, learnerId = null, sessio
    */
   function renderToggleVisual(help, kind) {
     clearVisual();
-    contentEl.classList.add('is-empty');
-    contentEl.textContent = '';
 
     const wrap = document.createElement('div');
     wrap.className = 'help-visual-wrap';
@@ -199,7 +210,7 @@ export function mountHelpPanel(container, { activityId, learnerId = null, sessio
     btn.addEventListener('click', async () => {
       const kind = btn.getAttribute('data-kind');
       overlay.querySelectorAll('.help-option-btn').forEach((b) => (b.disabled = true));
-      btn.textContent = 'Thinking…';
+      btn.classList.add('is-thinking');
 
       let help = null;
       try {
@@ -212,27 +223,40 @@ export function mountHelpPanel(container, { activityId, learnerId = null, sessio
       }
 
       if (closed) return;
+      btn.classList.remove('is-thinking');
       overlay.querySelectorAll('.help-option-btn').forEach((b) => {
         b.disabled = false;
-        b.textContent = HELP_KIND_LABELS[b.getAttribute('data-kind')];
       });
 
       clearVisual();
       contentEl.classList.remove('is-empty');
+      contentEl.textContent = '';
 
-      if (help) {
-        if (help.visual && help.visual.visualId && kind === 'show_me') {
-          renderShowMeScene(help);
-        } else if (help.visual && help.visual.visualId) {
+      const hasAnswer = !!(help && (help.visual?.visualId || help.content));
+      if (hasAnswer) {
+        const head = document.createElement('div');
+        head.className = 'help-content-head';
+        head.innerHTML = `${helpOptionIcon(kind)}<span>${HELP_KIND_LABELS[kind]}</span>`;
+        contentEl.appendChild(head);
+      }
+
+      if (hasAnswer && help.visual && help.visual.visualId && kind === 'show_me') {
+        renderShowMeScene(help);
+      } else if (help) {
+        if (help.visual && help.visual.visualId) {
           renderToggleVisual(help, kind);
         } else if (help.content) {
-          contentEl.textContent = help.content;
-        } else {
-          contentEl.textContent = 'Let us try a different way together — pick another option.';
+          const p = document.createElement('p');
+          p.className = 'help-content-text';
+          p.textContent = help.content;
+          contentEl.appendChild(p);
         }
         if (onHelpShown) onHelpShown({ kind });
       } else {
-        contentEl.textContent = 'Let us try a different way together — pick another option.';
+        const p = document.createElement('p');
+        p.className = 'help-content-text';
+        p.textContent = 'Let us try a different way together — pick another option.';
+        contentEl.appendChild(p);
       }
     });
   });

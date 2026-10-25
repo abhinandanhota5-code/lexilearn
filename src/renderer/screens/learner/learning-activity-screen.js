@@ -1,3 +1,124 @@
+import { AVAILABLE_AVATARS } from '../../../shared/profile-schema.js';
+import { WebSpeechTTSService } from '../../../services/audio/tts-service.js';
+import { mountHelpPanel } from '../../components/learning/help-panel.js';
+import { mountReadingComfortPanel } from '../../components/reading/reading-comfort-panel.js';
+import { companionCharacterArt } from '../../components/companion/companion-art.js';
+import {
+  mountStickerDecorations,
+  showCelebrationSticker,
+  companionIdFromProfile
+} from '../../components/stickers/sticker-layer.js';
+
+// Audio context for sound effects (synthesized, no external files needed)
+let audioContext;
+
+// Companion animation states
+const COMPANION_ANIMATIONS = {
+  'racing-car': {
+    idle: 'racing-car-idle',
+    correct: 'racing-car-victory',
+    incorrect: 'racing-car-wobble',
+    listening: 'racing-car-vroom',
+    celebrating: 'racing-car-victory-lap',
+    helping: 'racing-car-pit-stop'
+  },
+  'dinosaur': {
+    idle: 'dinosaur-idle',
+    correct: 'dinosaur-happy-chomp',
+    incorrect: 'dinosaur-concerned',
+    listening: 'dinosaur-head-tilt',
+    celebrating: 'dinosaur-roar',
+    helping: 'dinosaur-tail-wag'
+  },
+  'ocean-friends': {
+    idle: 'ocean-friends-idle',
+    correct: 'ocean-friends-treasure-find',
+    incorrect: 'ocean-friends-gentle-float',
+    listening: 'ocean-friends-wave',
+    celebrating: 'ocean-friends-ink-burst',
+    helping: 'ocean-friends-bubble'
+  }
+};
+
+function getAudioContext() {
+  const Ctor = window.AudioContext || window.webkitAudioContext;
+  if (!Ctor) return null;
+  if (!audioContext) {
+    audioContext = new Ctor();
+  }
+  return audioContext;
+}
+
+// Synthesize sound effects using Web Audio API
+function playSoundEffect(type) {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    switch (type) {
+      case 'correct':
+        // Pleasant ascending chime for correct answers
+        playChime(ctx, now, [523.25, 659.25, 783.99], 'sine', 0.3);
+        break;
+      case 'incorrect':
+        // Gentle descending tone for incorrect answers
+        playChime(ctx, now, [392.00, 349.23, 329.63], 'triangle', 0.4);
+        break;
+      case 'activityComplete':
+        // Happy fanfare for completing an activity
+        playChime(ctx, now, [523.25, 659.25, 783.99, 1046.50], 'sine', 0.5);
+        break;
+      case 'xpEarned':
+        // Sparkle sound for earning XP
+        playChime(ctx, now, [1046.50, 1318.51, 1567.98], 'sine', 0.2);
+        break;
+      case 'badgeUnlocked':
+        // Celebration sound for unlocking badge
+        playChime(ctx, now, [659.25, 880.00, 1046.50, 1318.51], 'sine', 0.6);
+        break;
+      case 'missionComplete':
+        // Epic sound for mission completion
+        playChime(ctx, now, [392.00, 523.25, 659.25, 783.99, 1046.50], 'sine', 0.8);
+        break;
+      default:
+        console.warn('Unknown sound effect type:', type);
+    }
+  } catch (error) {
+    console.error('Failed to play sound effect:', error);
+  }
+}
+
+// Helper to play a sequence of notes as a chime
+function playChime(ctx, startTime, frequencies, waveType, duration) {
+  frequencies.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = waveType;
+    osc.frequency.value = freq;
+
+    gain.gain.setValueAtTime(0, startTime + i * 0.1);
+    gain.gain.linearRampToValueAtTime(0.3, startTime + i * 0.1 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.01, startTime + i * 0.1 + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(startTime + i * 0.1);
+    osc.stop(startTime + i * 0.1 + duration + 0.1);
+  });
+}
+
+// Initialize audio context on first user interaction
+function initAudioContext() {
+  if (audioContext && audioContext.state === 'suspended') {
+    audioContext.resume().catch(console.error);
+  } else {
+    getAudioContext();
+  }
+}
+
 /**
  * Learner Screen M2: Learning Activity Host (§9, Phase 6 Step 2)
  *
@@ -16,22 +137,8 @@
  * flow (app.js) waits out FEEDBACK_DELAY_MS before advancing to the next plan.
  */
 
-import { AVAILABLE_AVATARS } from '../../../shared/profile-schema.js';
-import { WebSpeechTTSService } from '../../../services/audio/tts-service.js';
-import { mountHelpPanel } from '../../components/learning/help-panel.js';
-
-/**
- * How long the learner gets to SEE the outcome of what they just answered
- * before the next activity replaces it. Owned here (the screen owns the
- * feedback presentation); app.js awaits exactly this constant before
- * advancing. Same dwell as the screening task screen.
- */
 export const FEEDBACK_DELAY_MS = 1500;
 
-/**
- * Kid-safe feedback copy. Never a score, a streak, or a percentage — and never
- * any AI/model wording (the child UI is asserted free of it in e2e).
- */
 const FEEDBACK_COPY = Object.freeze({
   success: 'That is it! 🌟',
   help_success: 'That is it! 🌟',
@@ -39,21 +146,6 @@ const FEEDBACK_COPY = Object.freeze({
   timeout: 'Time is up — that is okay, we keep going 💙'
 });
 
-/**
- * @param {HTMLElement} container
- * @param {object} options
- * @param {object} options.profile learner profile
- * @param {object} options.plan renderer-safe ActivitySpecification
- * @param {number} options.completedCount activities completed this session
- * @param {Function} options.onSubmit (payload) => Promise<{isCorrect, outcome}|undefined> —
- *   resolves with the MAIN-side verdict once main has accepted the submission,
- *   or undefined when the submission was rejected
- * @param {Function} options.onTimeoutSubmit (payload) => Promise<{isCorrect, outcome}|undefined>
- * @param {Function} [options.onAdvance] (verdict) => void — called once the
- *   verdict is on screen, so the parent flow can wait out FEEDBACK_DELAY_MS
- *   and then render the next plan
- * @param {Function} [options.onEvent] (eventType, payload) => void — companion events
- */
 export function renderLearningActivityScreen(container, {
   profile,
   plan,
@@ -64,7 +156,19 @@ export function renderLearningActivityScreen(container, {
   onAdvance,
   onEvent
 }) {
-  const avatar = AVAILABLE_AVATARS.find(a => a.id === profile?.avatar) || { emoji: '🌟', label: 'Star' };
+  const avatarData = AVAILABLE_AVATARS.find(a => a.id === profile?.avatar);
+const avatar = avatarData || {
+  id: 'dinosaur',
+  emoji: '🦕',
+  label: 'Dinosaur',
+  animationType: 'dinosaur',
+  color: '#8BC34A',
+  secondaryColor: '#A5D6A7',
+  gradient: 'linear-gradient(135deg, #2d5016 0%, #5a7d3d 50%, #8BC34A 100%)',
+  personality: 'friendly',
+  quote: "Rawr! Learning is dino-mite!",
+  themeId: 'dinosaur-world'
+};
   const progressPct = Math.min(100, Math.round((completedCount / Math.max(1, goalActivities)) * 100));
   const mode = plan.mode === 'build' ? 'build' : 'choose';
   const presentation = plan.presentation || { mode: 'text', replayEnabled: false };
@@ -108,10 +212,15 @@ export function renderLearningActivityScreen(container, {
 
   /* ── markup ── */
 
+  // Companion animation element
+  const companionAnimations = COMPANION_ANIMATIONS[avatar.animationType] || COMPANION_ANIMATIONS['dinosaur'];
+
   const supportRow = `
     <div class="activity-support-row">
       <button type="button" class="audio-btn" id="audio-btn" aria-label="Read this aloud">🔊 Listen</button>
       <button type="button" class="audio-btn" id="replay-btn" aria-label="Read again">🔁 Again</button>
+      <button type="button" class="audio-btn" id="stop-btn" aria-label="Stop audio" style="display: none;">⏹️ Stop</button>
+      <button type="button" class="audio-btn" id="reading-comfort-btn" aria-label="Reading comfort settings">🛋️ Comfy</button>
       <button type="button" class="help-trigger" id="help-trigger-btn">I don't understand 💙</button>
     </div>
   `;
@@ -122,9 +231,6 @@ export function renderLearningActivityScreen(container, {
 
   container.innerHTML = `
     <div class="learner-container screen-enter" style="justify-content: flex-start; padding-top: var(--space-lg);">
-      <!-- BUILD VERIFICATION MARKER - TEMPORARY -->
-      <div style="position: fixed; top: 10px; right: 10px; background: #FF6B6B; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 9999;">BUILD v2024-10-24</div>
-
       <!-- Progress Bar - Colorful and Visible -->
       <div class="quest-progress">
         <div class="quest-progress-track">
@@ -138,6 +244,9 @@ export function renderLearningActivityScreen(container, {
 
       <!-- Main Learning Card - Large, Friendly, Centered -->
       <div class="learner-card task-card-enter" style="margin-top: var(--space-lg); max-width: 700px; margin-left: auto; margin-right: auto;">
+        <!-- The docked companion widget is the single companion on this
+             screen — it animates through the same states via IPC. -->
+
         <!-- Category Badge -->
         <span class="task-category-badge" style="background: var(--color-accent); color: white; display: inline-block; margin-bottom: var(--space-md);">${escapeHtml(plan.title || 'Practice')}</span>
 
@@ -169,6 +278,20 @@ export function renderLearningActivityScreen(container, {
   const tilePool = container.querySelector('#tile-pool');
   const buildTray = container.querySelector('#build-tray');
 
+  // Scrapbook scatter around the screen edges + subtle corner stickers
+  // on the question card (never covers controls)
+  mountStickerDecorations(container.querySelector('.learner-container') || container, {
+    companionId: companionIdFromProfile(profile),
+    placement: 'scrapbook'
+  });
+  const questionCard = container.querySelector('.learner-card');
+  if (questionCard) {
+    mountStickerDecorations(questionCard, {
+      companionId: companionIdFromProfile(profile),
+      placement: 'question'
+    });
+  }
+
   /* ── timer (gentle, non-punitive) ── */
 
   timerInterval = setInterval(() => {
@@ -190,13 +313,34 @@ export function renderLearningActivityScreen(container, {
     const btn = container.querySelector(isReplay ? '#replay-btn' : '#audio-btn');
     if (btn) {
       btn.disabled = true;
-      btn.classList.add('is-speaking');
     }
 
     try {
-      const res = await tts.speak(textToSpeak, { rate: presentation.ttsRate ?? 0.85 });
+      isCurrentlySpeaking = true;
+      if (btn) {
+        btn.textContent = '⏸️ Pause';
+      }
+      if (stopBtn) {
+        stopBtn.style.display = 'inline-block';
+      }
+      audioSignals.audioUsed = true;
+
+      const res = await tts.speak(textToSpeak, {
+        rate: presentation.ttsRate ?? 0.85,
+        onEnd: () => {
+          isCurrentlySpeaking = false;
+          if (btn) btn.textContent = isReplay ? '🔁 Again' : '🔊 Listen';
+          if (stopBtn) stopBtn.style.display = 'none';
+        },
+        onError: (err) => {
+          console.warn('TTS error (non-critical):', err);
+          isCurrentlySpeaking = false;
+          if (btn) btn.textContent = isReplay ? '🔁 Again' : '🔊 Listen';
+          if (stopBtn) stopBtn.style.display = 'none';
+        }
+      });
+
       if (res?.ok) {
-        audioSignals.audioUsed = true;
         if (isReplay) {
           audioSignals.replayCount += 1;
           audioSignals.answeredAfterReplay = true;
@@ -209,18 +353,56 @@ export function renderLearningActivityScreen(container, {
       }
     } catch (err) {
       console.error('Speech synthesis error:', err);
+      isCurrentlySpeaking = false;
+      if (btn) btn.textContent = isReplay ? '🔁 Again' : '🔊 Listen';
+      if (stopBtn) stopBtn.style.display = 'none';
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.classList.remove('is-speaking');
       }
     }
   }
 
   const audioBtn = container.querySelector('#audio-btn');
   const replayBtn = container.querySelector('#replay-btn');
-  if (audioBtn) audioBtn.addEventListener('click', () => speak(false));
-  if (replayBtn) replayBtn.addEventListener('click', () => speak(true));
+  const stopBtn = container.querySelector('#stop-btn');
+
+  let isCurrentlySpeaking = false;
+
+  if (audioBtn) {
+    audioBtn.addEventListener('click', () => {
+      if (isCurrentlySpeaking) {
+        tts?.cancel();
+        isCurrentlySpeaking = false;
+        audioBtn.textContent = '🔊 Listen';
+        stopBtn.style.display = 'none';
+      } else {
+        speak(false);
+      }
+    });
+  }
+
+  if (replayBtn) {
+    replayBtn.addEventListener('click', () => {
+      if (isCurrentlySpeaking) {
+        tts?.cancel();
+        isCurrentlySpeaking = false;
+        audioBtn.textContent = '🔊 Listen';
+        stopBtn.style.display = 'none';
+      } else {
+        speak(true);
+      }
+    });
+  }
+
+  if (stopBtn) {
+    stopBtn.addEventListener('click', () => {
+      tts?.cancel();
+      isCurrentlySpeaking = false;
+      audioBtn.textContent = '🔊 Listen';
+      stopBtn.style.display = 'none';
+    });
+  }
 
   // Auto-speak when audio leads presentation, or if textToSpeak is available
   if (tts && textToSpeak) {
@@ -230,6 +412,20 @@ export function renderLearningActivityScreen(container, {
   }
 
   /* ── help panel ── */
+
+  container.querySelector('#reading-comfort-btn')?.addEventListener('click', () => {
+    mountReadingComfortPanel({
+      accommodations: profile?.accommodations,
+      onPersist: async (nextAccommodations) => {
+        const result = await window.electronAPI.saveProfile({
+          ...profile,
+          accommodations: { ...(profile.accommodations || {}), ...nextAccommodations }
+        });
+        profile.accommodations = (result?.success ? result.profile?.accommodations : null)
+          || { ...(profile.accommodations || {}), ...nextAccommodations };
+      }
+    });
+  });
 
   container.querySelector('#help-trigger-btn').addEventListener('click', () => {
     if (helpOpen || answered) return;
@@ -368,6 +564,27 @@ export function renderLearningActivityScreen(container, {
       });
     }
 
+    // Play sound effect based on correctness
+    if (isCorrect) {
+      playSoundEffect('correct');
+    } else {
+      playSoundEffect('incorrect');
+    }
+
+    // Animate companion based on outcome
+    const companionEl = container.querySelector('#companion-anim');
+    if (companionEl) {
+      const animName = isCorrect ? companionAnimations.correct : companionAnimations.incorrect;
+      companionEl.style.animation = `${animName} 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)`;
+
+      // Return to idle after animation
+      setTimeout(() => {
+        if (companionEl) {
+          companionEl.style.animation = `${companionAnimations.idle} 3s ease-in-out infinite`;
+        }
+      }, 1200);
+    }
+
     const feedbackEl = container.querySelector('#activity-feedback');
     if (feedbackEl) {
       const feedbackText = FEEDBACK_COPY[outcome] || FEEDBACK_COPY.incorrect;
@@ -377,6 +594,12 @@ export function renderLearningActivityScreen(container, {
       feedbackEl.style.color = isCorrect ? 'var(--color-success)' : 'var(--color-error)';
       feedbackEl.style.borderLeft = `4px solid ${isCorrect ? 'var(--color-success)' : 'var(--color-error)'}`;
       feedbackEl.classList.add('is-visible');
+
+      if (isCorrect) {
+        showCelebrationSticker(feedbackEl, {
+          companionId: companionIdFromProfile(profile)
+        });
+      }
     }
   }
 
@@ -508,7 +731,7 @@ function escapeHtml(value) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+    .replace(/\"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
 
@@ -516,3 +739,173 @@ function formatTime(ms) {
   const seconds = Math.max(0, Math.ceil(ms / 1000));
   return `${seconds}s`;
 }
+
+/* ───────────────────────── Companion Animation Keyframes ───────────────────────── */
+
+// Racing Car Animations
+const RACING_CAR_KEYFRAMES = `
+@keyframes racing-car-idle {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-5px) rotate(-2deg); }
+  50% { transform: translateX(5px) rotate(2deg); }
+  75% { transform: translateX(-3px) rotate(-1deg); }
+}
+
+@keyframes racing-car-vroom {
+  0% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-10px) rotate(-3deg); }
+  40% { transform: translateX(20px) rotate(1deg); }
+  60% { transform: translateX(-5px) rotate(-1deg); }
+  80% { transform: translateX(10px) rotate(2deg); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+@keyframes racing-car-victory {
+  0% { transform: translateX(0) rotate(0deg) scale(1); }
+  20% { transform: translateX(-15px) rotate(-5deg) scale(1.1); }
+  40% { transform: translateX(30px) rotate(3deg) scale(1.15); }
+  60% { transform: translateX(-10px) rotate(-2deg) scale(1.1); }
+  80% { transform: translateX(15px) rotate(2deg) scale(1.05); }
+  100% { transform: translateX(0) rotate(0deg) scale(1); }
+}
+
+@keyframes racing-car-wobble {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-8px) rotate(-4deg); }
+  50% { transform: translateX(8px) rotate(4deg); }
+  75% { transform: translateX(-4px) rotate(-2deg); }
+}
+
+@keyframes racing-car-victory-lap {
+  0% { transform: translateX(0) rotate(0deg) scale(1); }
+  25% { transform: translateX(-20px) rotate(-8deg) scale(1.1); }
+  50% { transform: translateX(40px) rotate(5deg) scale(1.2); }
+  75% { transform: translateX(-10px) rotate(-3deg) scale(1.1); }
+  100% { transform: translateX(0) rotate(0deg) scale(1); }
+}
+
+@keyframes racing-car-pit-stop {
+  0% { transform: translateX(0) rotate(0deg) scale(1); }
+  33% { transform: translateX(-10px) rotate(-3deg) scale(0.95); }
+  66% { transform: translateX(10px) rotate(3deg) scale(1.05); }
+  100% { transform: translateX(0) rotate(0deg) scale(1); }
+}
+
+@keyframes racing-car-head-tilt {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  50% { transform: translateX(5px) rotate(5deg); }
+}
+`;
+
+// Dinosaur Animations
+const DINOSAUR_KEYFRAMES = `
+@keyframes dinosaur-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(1deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-4px) rotate(-1deg); }
+}
+
+@keyframes dinosaur-happy-chomp {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-15px) rotate(3deg) scale(1.1); }
+  40% { transform: translateY(-5px) rotate(-2deg) scale(1.05); }
+  60% { transform: translateY(-12px) rotate(2deg) scale(1.1); }
+  80% { transform: translateY(-3px) rotate(-1deg) scale(1.02); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+@keyframes dinosaur-concerned {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(5px) rotate(-3deg) scale(0.98); }
+  66% { transform: translateY(-3px) rotate(2deg) scale(1.02); }
+}
+
+@keyframes dinosaur-roar {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-20px) rotate(5deg) scale(1.15); }
+  40% { transform: translateY(-8px) rotate(-3deg) scale(1.05); }
+  60% { transform: translateY(-18px) rotate(4deg) scale(1.15); }
+  80% { transform: translateY(-5px) rotate(-1deg) scale(1.05); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+@keyframes dinosaur-tail-wag {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(3deg); }
+  50% { transform: translateY(0) rotate(-2deg); }
+  75% { transform: translateY(-3px) rotate(2deg); }
+}
+
+@keyframes dinosaur-head-tilt {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(6deg); }
+}
+`;
+
+// Ocean Friends (Octopus) Animations
+const OCEAN_FRIENDS_KEYFRAMES = `
+@keyframes ocean-friends-idle {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+  25% { transform: translateY(-6px) translateX(3px) rotate(1deg); }
+  50% { transform: translateY(-3px) translateX(-3px) rotate(-1deg); }
+  75% { transform: translateY(-8px) translateX(2px) rotate(1deg); }
+}
+
+@keyframes ocean-friends-treasure-find {
+  0% { transform: translateY(0) translateX(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-15px) translateX(5px) rotate(2deg) scale(1.1); }
+  40% { transform: translateY(-5px) translateX(-5px) rotate(-2deg) scale(1.05); }
+  60% { transform: translateY(-20px) translateX(8px) rotate(3deg) scale(1.15); }
+  80% { transform: translateY(-8px) translateX(-3px) rotate(-1deg) scale(1.05); }
+  100% { transform: translateY(0) translateX(0) rotate(0deg) scale(1); }
+}
+
+@keyframes ocean-friends-gentle-float {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+  33% { transform: translateY(3px) translateX(-2px) rotate(-2deg) scale(0.98); }
+  66% { transform: translateY(-2px) translateX(2px) rotate(1deg) scale(1.02); }
+}
+
+@keyframes ocean-friends-ink-burst {
+  0% { transform: translateY(0) translateX(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-12px) translateX(0) rotate(0deg) scale(1.2); }
+  40% { transform: translateY(-8px) translateX(5px) rotate(3deg) scale(1.1); }
+  60% { transform: translateY(-15px) translateX(-5px) rotate(-3deg) scale(1.15); }
+  80% { transform: translateY(-5px) translateX(3px) rotate(1deg) scale(1.05); }
+  100% { transform: translateY(0) translateX(0) rotate(0deg) scale(1); }
+}
+
+@keyframes ocean-friends-wave {
+  0% { transform: translateY(0) rotate(0deg); }
+  20% { transform: translateY(-10px) rotate(3deg); }
+  40% { transform: translateY(-5px) rotate(-2deg); }
+  60% { transform: translateY(-12px) rotate(2deg); }
+  80% { transform: translateY(-3px) rotate(-1deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes ocean-friends-bubble {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+  50% { transform: translateY(-10px) translateX(4px) rotate(2deg); }
+}
+`;
+
+// Inject keyframes into document
+function injectCompanionKeyframes() {
+  if (document.getElementById('companion-animations')) return;
+
+  const style = document.createElement('style');
+  style.id = 'companion-animations';
+  style.textContent = RACING_CAR_KEYFRAMES + DINOSAUR_KEYFRAMES + OCEAN_FRIENDS_KEYFRAMES + `
+    @media (prefers-reduced-motion: reduce) {
+      #companion-anim {
+        animation: none !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Inject keyframes on module load
+injectCompanionKeyframes();

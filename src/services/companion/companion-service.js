@@ -13,6 +13,10 @@ import { CompanionEventBus } from './companion-event-bus.js';
 import { CompanionStateMachine } from './companion-state-machine.js';
 import { createBehaviorBuilder } from './companion-behaviors.js';
 
+function stripLeadingEmoji(label) {
+  return String(label || '').replace(/^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)+\s*/u, '');
+}
+
 export class CompanionService {
   /**
    * @param {object} [options]
@@ -63,6 +67,7 @@ export class CompanionService {
    */
   activate(ctx) {
     const avatar = ctx?.avatar || { id: null, label: '', emoji: '🌟' };
+    avatar.label = stripLeadingEmoji(avatar.label);
     this._learnerContext = {
       learnerId: ctx?.learnerId || 'anonymous',
       firstName: ctx?.firstName || 'friend',

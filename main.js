@@ -93,6 +93,20 @@ function createWindow() {
   });
 
   win.loadFile('index.html');
+
+  // DevTools only on request (LEXI_DEVTOOLS=1) — docked DevTools halves the
+  // viewport and breaks the layout.
+  if (process.env.LEXI_DEVTOOLS === '1') {
+    win.webContents.openDevTools();
+  }
+
+  // Log renderer console messages to main process terminal
+  win.webContents.on('console-message', (event) => {
+    const level = event.level || 'info';
+    const message = event.message || '';
+    const line = event.line || 0;
+    console.log(`[RENDERER ${level}] ${message} (line ${line})`);
+  });
 }
 
 // Register IPC Handlers
@@ -146,6 +160,13 @@ function registerIpcHandlers() {
       const existing = await profileStore.getProfile();
       const canonical = buildCanonicalProfile(profileData, existing);
       const saved = await profileStore.saveProfile(canonical);
+      // Reflect a companion change in the widget immediately — the service
+      // otherwise keeps the avatar it activated with at startup.
+      if (companionService && saved.avatar !== existing?.avatar) {
+        ensureCompanionActivated({ force: true }).catch((err) =>
+          console.error('Companion re-activation after profile save failed:', err?.message || err)
+        );
+      }
       return { success: true, profile: saved };
     } catch (err) {
       return { success: false, error: err.message };
@@ -599,6 +620,31 @@ function registerIpcHandlers() {
     }
   });
 
+  // Dashboard Analytics (Parent Dashboard) - get all sessions for charts
+  ipcMain.handle(IPC_CHANNELS.LEARNING_GET_ALL_SESSIONS, async (_event, learnerId) => {
+    try {
+      if (!learningStore || !learnerId) {
+        return { success: false, error: 'Learning store or learnerId not available' };
+      }
+      const sessions = await learningStore.getAllSessions(learnerId);
+      return { success: true, sessions };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  ipcMain.handle(IPC_CHANNELS.SCREENING_GET_ALL_SESSIONS, async (_event, learnerId) => {
+    try {
+      if (!screeningStore || !learnerId) {
+        return { success: false, error: 'Screening store or learnerId not available' };
+      }
+      const sessions = await screeningStore.getAllSessions(learnerId);
+      return { success: true, sessions };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
   // Personalization Engine: Approval Gate (MVP Hackathon)
   ipcMain.handle(IPC_CHANNELS.PE_GET_PENDING_PROPOSALS, async (_event, learnerId) => {
     try {
@@ -652,15 +698,28 @@ function registerIpcHandlers() {
  * Bind the companion service to the active learner profile, if any.
  * Non-fatal: a missing profile simply leaves the companion unactivated.
  */
-async function ensureCompanionActivated() {
+async function ensureCompanionActivated({ force = false } = {}) {
   if (!companionService) return false;
-  if (companionService.isActivated) return true;
+  if (companionService.isActivated && !force) return true;
 
   const currentProfile = await profileStore.getProfile();
   if (!currentProfile) return false;
 
+  // Find the avatar, default to dinosaur for legacy profiles
   const avatar = AVAILABLE_AVATARS.find((a) => a.id === currentProfile.avatar)
-    || { id: null, label: currentProfile.avatar || '', emoji: '🌟' };
+    || AVAILABLE_AVATARS.find((a) => a.id === 'dinosaur')
+    || {
+        id: 'dinosaur',
+        label: 'Dinosaur',
+        emoji: '🦕',
+        animationType: 'dinosaur',
+        color: '#8BC34A',
+        secondaryColor: '#A5D6A7',
+        gradient: 'linear-gradient(135deg, #2d5016 0%, #5a7d3d 50%, #8BC34A 100%)',
+        personality: 'friendly',
+        quote: "Rawr! Learning is dino-mite!",
+        themeId: 'dinosaur-world'
+      };
 
   companionService.activate({
     learnerId: currentProfile.learnerId,

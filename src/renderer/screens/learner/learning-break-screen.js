@@ -1,3 +1,6 @@
+import { mountCompanionWidget } from '../../components/companion/companion-widget.js';
+import { mountStickerDecorations, companionIdFromProfile } from '../../components/stickers/sticker-layer.js';
+
 /**
  * Learner Screen M3: Learning Break / Celebration (§7 R1, Phase 6 Step 2)
  *
@@ -26,6 +29,9 @@ export function renderLearningBreakScreen(container, {
       </div>
 
       <div class="learner-card celebration-card-enter">
+        <!-- Live companion widget mounted here -->
+        <div class="learner-avatar" id="companion-hero-host" style="margin-bottom: var(--space-md);"></div>
+
         <div class="break-emoji">🏆</div>
 
         <div class="celebration-stats">
@@ -48,16 +54,24 @@ export function renderLearningBreakScreen(container, {
     </div>
   `;
 
+  mountStickerDecorations(container.querySelector('.learner-container') || container, {
+    companionId: companionIdFromProfile(profile),
+    placement: 'scrapbook'
+  });
+
   container.querySelector('#break-done-btn').addEventListener('click', () => {
     onFinish();
   });
+
+  // Mount hero companion after render
+  mountCompanionWidget(container.querySelector('#companion-hero-host'), { variant: 'hero' });
 }
 
 function escapeHtml(value) {
   return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&apos;');
 }
